@@ -62,7 +62,7 @@ facebook = oauth.remote_app('facebook',
 
 @app.route("/")
 def hello():
-    return render_template('well.html')
+    return render_template('welcome.html')
 
 @app.route("/login")
 def login():
