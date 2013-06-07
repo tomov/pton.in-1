@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %} - Where will you be this summer?{% endblock %}
+{% block content %}
+
+        <div class="email_wrapp" style="border-radius:20px;webkit-border-radius:20px;height:100px;z-index:10;position:fixed;background:rgba(255,255,255,0.9)">
+            <script>
+            var width = (window.innerWidth-922)/2;
+            $(".email_wrapp").css('left',width);
+            var height = (window.innerHeight-266)/2;
+            $(".email_wrapp").css('top',height+66);
+
+            </script>
+            <div class="container">
+                <div class="span11 wrapp" style="background:none;box-shadow:none">
+                    <p style="font-size:26px;position:relative;top:-4px;"><strong>Where will you be this summer?</strong></p>
+                    <div style="top: 3px; float:right; position: relative;"><a href="{{ url_for('login') }}" class="btn send">Connect with Facebook</a><br /><p style='font-size: 15px; margin-left: 0px; margin-top: 5px; line-height: 100%;'>We won't post on your timeline or message your friends!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+{% endblock %}

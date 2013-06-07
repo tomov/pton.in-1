@@ -1,0 +1,18 @@
+.brand select {margin-top: 5px;
+margin-left: 10px;}
+ 
+.brand {margin-top: -5px;
+font-size: 18px;}
+ 
+span:nth-child(2) {margin-top: -7px;}
+ 
+.nav.pull-right {top: -1px;
+margin-top: -11px;}
+ 
+#new {margin-top: -9px;}
+ 
+.navbar.navbar-static-top {height:50px;}
+ 
+span:nth-child(3) {margin-top: -15px;}
+ 
+.timeline-groups-text {margin-top:0px;}
