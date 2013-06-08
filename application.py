@@ -62,11 +62,14 @@ facebook = oauth.remote_app('facebook',
 
 @app.route("/<group_alias>")  # doesn't override /login, etc controller urls
 @app.route("/")
-def hello(group_alias = None):
-    return render_template('welcome.html')
+def index(group_alias = None):
+    if not session.get('logged_in'):
+        return render_template('welcome.html', group_alias=group_alias)
+    else:
+        return render_template('main.html')
 
 @app.route("/<group_alias>/login")
-@app.route("/login")
+@app.route("/login")        # for some reason there is a group_alias even though we call /login without passing it from welcome.html.... magic....
 def login(group_alias = None):
     return facebook.authorize(callback=url_for('facebook_authorized',
         next=request.args.get('next') or request.referrer or None,
@@ -75,7 +78,15 @@ def login(group_alias = None):
 @app.route("/<group_alias>/logout")
 @app.route("/logout")
 def logout(group_alias = None):
-    return 'TODO'
+    session.pop('oauth_token')
+    session.pop('user_id')
+    session.pop('user_first_name')
+    session.pop('user_last_name')
+    session.pop('logged_in')
+    if not group_alias:
+        return redirect(url_for("index"))
+    else:
+        return redirect(url_for("index", group_alias=group_alias))
 
 
 #----------------------------------------
@@ -113,14 +124,14 @@ def facebook_authorized(resp):
     if user_is_new:
         # here we show the prompt
         if not group_alias:
-            return redirect("/")
+            return redirect(url_for("index"))
         else:
-            return redirect(url_for(group_alias))
+            return redirect(url_for("index", group_alias=group_alias))
     else:
         if not group_alias:
-            return redirect("/")
+            return redirect(url_for("index"))
         else:
-            return redirect(url_for(group_alias))
+            return redirect(url_for("index", group_alias=group_alias))
 
 @facebook.tokengetter
 def get_facebook_oauth_token():
