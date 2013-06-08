@@ -60,13 +60,71 @@ facebook = oauth.remote_app('facebook',
 # controllers
 #----------------------------------------
 
+@app.route("/<group_alias>")  # doesn't override /login, etc controller urls
 @app.route("/")
-def hello():
+def hello(group_alias = None):
     return render_template('welcome.html')
 
+@app.route("/<group_alias>/login")
 @app.route("/login")
-def login():
+def login(group_alias = None):
+    return facebook.authorize(callback=url_for('facebook_authorized',
+        next=request.args.get('next') or request.referrer or None,
+        _external=True, group_alias=group_alias))
+
+@app.route("/<group_alias>/logout")
+@app.route("/logout")
+def logout(group_alias = None):
     return 'TODO'
+
+
+#----------------------------------------
+# facebook oauth stuff
+#----------------------------------------
+
+@app.route('/login/authorized')
+@facebook.authorized_handler
+def facebook_authorized(resp):
+    if resp is None:
+        return 'Access denied: reason=%s error=%s' % (
+                request.args['error_reason'],
+                request.args['error_description']
+                )
+    session['oauth_token'] = (resp['access_token'], '')
+    me = facebook.get('/me')
+    u = User.query.filter_by(fbid=me.data['id']).first()
+    group_alias = request.args.get('group_alias')
+
+    user_is_new = False
+    if not u:
+        pton_info = get_pton_info(me)
+        if True or pton_info: # TODO this is a temporary hack b/c for some reason it doesn't always work... FIXME
+            u = User.create_pton_student(me, pton_info)
+            user_is_new = True
+        else:
+            return "Access denied. If you're a Princeton student, \
+                connect your Princeton email to Facebook."
+
+    session['user_id'] = u.id
+    session['user_first_name'] = u.first_name
+    session['user_last_name'] = u.last_name
+    session['logged_in'] = True
+
+    if user_is_new:
+        # here we show the prompt
+        if not group_alias:
+            return redirect("/")
+        else:
+            return redirect(url_for(group_alias))
+    else:
+        if not group_alias:
+            return redirect("/")
+        else:
+            return redirect(url_for(group_alias))
+
+@facebook.tokengetter
+def get_facebook_oauth_token():
+    return session.get('oauth_token')
 
 #----------------------------------------
 # api 
@@ -79,8 +137,6 @@ def login():
 #----------------------------------------
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5555))
+    port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
-
-
 
