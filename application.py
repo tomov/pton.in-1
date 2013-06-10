@@ -66,10 +66,10 @@ def index(group_alias = None):
     if not session.get('logged_in'):
         return render_template('welcome.html', group_alias=group_alias)
     else:
-        return render_template('main.html')
+        return render_template('main.html', group_alias=group_alias)
 
 @app.route("/<group_alias>/login")
-@app.route("/login")        # for some reason there is a group_alias even though we call /login without passing it from welcome.html.... magic....
+@app.route("/login")
 def login(group_alias = None):
     return facebook.authorize(callback=url_for('facebook_authorized',
         next=request.args.get('next') or request.referrer or None,

@@ -1,3 +1,18 @@
+function initialize() {
+    // init map
+    var center = new google.maps.LatLng(20,0);
+    var mapOptions = {
+        zoom: 2,
+        center: center,
+        scrollwheel: false,
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+    }
+    var map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
+}
+
+google.maps.event.addDomListener(window, 'load', initialize);
+
+
 function initialize_autocomplete(map) {
   var input = document.getElementById('searchTextField');
   var autocomplete = new google.maps.places.Autocomplete(input);

@@ -1,2 +1,31 @@
-asldkfjlaskdjfas
-dfLjasd;fasd
+{% extends "base.html" %}
+<!-- to reposition blocks, visit base.html -->
+
+{% block navbar_content %}
+    <span class="brand" href="/">
+        <strong>Princeton in</strong>
+        &nbsp;<input type='text' id='searchTextField'></input>
+    </span>
+{% endblock %}
+
+{% block navbar_right %}
+    <ul class="nav pull-right">
+      <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                  {{ session.user_first_name }} {{ session.user_last_name}}
+                  <b class="caret"></b>
+                </a>
+        <ul class="dropdown-menu">
+          <li><a href='mailto:mtomov@princeton.edu?subject=My two cents about Pton.in' 
+               target='_blank'>Send Feedback!</a></li>
+          <li><a href="{{ url_for('logout', group_alias=group_alias) }}">Log Out</a></li>
+        </ul>
+      </li>
+    </ul>
+{% endblock %}
+
+{% block content %}
+    {% include "prompts.html" %}
+    {% include "map.html" %}
+    {% include "timeline.html" %}
+{% endblock %}
