@@ -1,26 +1,51 @@
-function getRandomName() {
-    var names = ["Algie", "Barney", "Grant", "Mick", "Langdon"];
-
-    var r = Math.round(Math.random() * (names.length - 1));
-    return names[r];
-}
+TIMELINE_ROW_HEIGHT = 46.5; // TODO find more legit way to figure it out...
+TIMELINE_PEOPLE_LIMIT = 10;         // how many trips to show by default -- this is to speed up zooming / loading
+show_all_trips_in_timeline_global = false;
 
 // when we zoom the map, the timeline shows only the trips that are visible on the map
 function onZoom(bounds) {
+    if (typeof markers_global === 'undefined' || typeof timeline === 'undefined') {
+        // onZoom sometimes gets called before the timeline / map has loaded
+        return;
+    }
+    // count how many people will be visible
+    // note that this relies on the fact that trips for the same person appear one after the other in the dataTable
+    var last_group = "";
+    var people_count = 0;
     // create array for viewable rows
-    save_rows = [];
- 
+    var save_rows = [];
     // currently iterates through list... should prolly change to a 2d-tree or something evetually
-    for (var j=0;j<markers.length;j++) {
-        if (bounds.contains(markers[j].getPosition())) {
+    for (var j=0;j<markers_global.length;j++) {
+        if (bounds.contains(markers_global[j].getPosition())) {
+            if (!show_all_trips_in_timeline_global) {
+                // break early if we can -- speeds things up
+                group = dataTable_global.getValue(j, 3);
+                if (group != last_group) {
+                    people_count++;
+                    last_group = group;
+                }
+                if (people_count > TIMELINE_PEOPLE_LIMIT) {
+                    break;
+                }
+            }
             // add row if in bounds
             save_rows.push(j);
         }
     }
-
     dataView_global.setRows(save_rows);
     timeline.draw(dataView_global);
-    htmltooltip.render();
+    updateTimelineHeight();
+}
+
+function updateTimelineHeight() {
+    var row_count = timeline.groups.length;
+    if (!show_all_trips_in_timeline_global) {
+        if (row_count > TIMELINE_PEOPLE_LIMIT) {
+            row_count = TIMELINE_PEOPLE_LIMIT;
+        }
+    }
+    var height = (row_count + 1) * TIMELINE_ROW_HEIGHT;
+    $("#mytimeline").css('height', height);
 }
 
 

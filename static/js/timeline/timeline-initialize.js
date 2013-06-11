@@ -1,5 +1,7 @@
 var dataTable_global; // for now, in timeline_controller, basically all functions rely on these being global
 var dataView_global;
+//var timeline_global;   // seems like this HAS to be called this way... renaming it starts throwing errors in timeline-lib.js which is their lib, it seems to rely on the timeline being stored in a global variable called timeline... must investigate sometime
+// more mysteries... errors persist if I define var timeline; here ... weird stuff
 
 function get_trips_for_timeline() { // TODO perhaps merge with map one?
     $.ajax({
@@ -20,7 +22,7 @@ function get_trips_for_timeline_success(data, textStatus, jqXHR) {
 
         name = "<a href='https://www.facebook.com/" + trip['user_fbid'] + "' target='_blank'>"
             + "<img src='https://graph.facebook.com/" + trip['user_fbid'] + "/picture' width='40px' height='40px' style='float: left; margin-right: 5px;'>"
-            + trip['user_name']
+            + trip['user_first_name'] + '<br />' + trip['user_last_name']
             + "</a>"
 
         var start = new Date(trip['start_date']); // used for timeline viz
@@ -62,8 +64,6 @@ function get_trips_for_timeline_success(data, textStatus, jqXHR) {
         var location_long = trip['location_long'].toString(); 
         var start_date = trip['start_date_form']; // these are strings to be compatible with the wtform fields (see form.py)
         var end_date = trip['end_date_form'];
-
-        console.log(name);
 
         dataTable_global.addRow([start, end, content, name, group, doing_what, comment, link, is_mine, location_name, location_lat, location_long, start_date, end_date, editable, delete_link, change_dates_link]);
             
@@ -109,6 +109,8 @@ function get_trips_for_timeline_success(data, textStatus, jqXHR) {
     var start = new Date(2013, 4, 15);
     var end = new Date(2013, 8, 15);
     timeline.setVisibleChartRange(start, end);
+    
+    updateTimelineHeight(); // to compress timeline
 }
 
 
@@ -149,6 +151,20 @@ function initialize_timeline() {
     dataView_global = dataView;
 
     get_trips_for_timeline();
+
+    $('#show-more').click(function() {
+      $('#show-more').addClass('hidden');
+      $('#show-less').removeClass('hidden');
+      show_all_trips_in_timeline_global = true;
+      onZoom(map_global.getBounds()); // updates timeline height too, but we need to load the extra rows that were hidden
+    });
+
+    $('#show-less').click(function() {
+      $('#show-less').addClass('hidden');
+      $('#show-more').removeClass('hidden');
+      show_all_trips_in_timeline_global = false;
+      updateTimelineHeight();
+    });
 }
 
 

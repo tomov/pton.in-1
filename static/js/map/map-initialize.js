@@ -1,5 +1,3 @@
-var map_global; // need this b/c of the ajax call -- there is no other way to pass map through:e
-
 function get_trips_for_map() { // TODO perhaps merge with timeline one?
     $.ajax({
         'url' : "get_trips_for_map",   // TODO FIXME Jinja
@@ -17,7 +15,7 @@ function get_trips_for_map_success(data, textStatus, jqXHR) {
 
     // init data points
     info_text = new Array();
-    markers = new Array();
+    markers_global = new Array();
     marker_idx = 0;
 
     // pretty pin icon 
@@ -48,7 +46,7 @@ function get_trips_for_map_success(data, textStatus, jqXHR) {
             icon: pinIcon,
         });
 
-        markers.push(marker); // for zoomin/zoom out changes
+        markers_global.push(marker); // for zoomin/zoom out changes
 
         // add info bubble to marker
         marker_idx++;
@@ -71,7 +69,7 @@ function get_trips_for_map_success(data, textStatus, jqXHR) {
 
     // markerclusterer -- this makes things pretty
     var mcOptions = {gridSize: 50, maxZoom: 10};
-    var mc = new MarkerClusterer(map, markers, mcOptions); 
+    var mc = new MarkerClusterer(map, markers_global, mcOptions); 
 }
 
 function get_trips_for_map_failure(jqXHR, textStatus, errorThrown) {
@@ -101,7 +99,7 @@ function initialize_map() {
     // upadte trips in timeline with those visible on map
     google.maps.event.addListener(map, 'bounds_changed', function() {
         var bounds = map.getBounds();
-        //onZoom(bounds);             TODO
+        onZoom(bounds);
     });
 }
 

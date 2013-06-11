@@ -198,7 +198,7 @@ def get_trips_for_timeline():
     if not session.get('logged_in'):
         return format_response('User not logged in', True)
 
-    trips = Trip.query.limit(10).all()
+    trips = Trip.query.all()
     result_dict = []
     for trip in trips:
         trip_dict = dict()
@@ -214,9 +214,13 @@ def get_trips_for_timeline():
         trip_dict['looking_for_housing'] = trip.looking_for_housing
         trip_dict['comment'] = trip.comment
         trip_dict['user_name'] = trip.user.first_name + ' ' + trip.user.last_name
+        trip_dict['user_first_name'] = trip.user.first_name
+        trip_dict['user_last_name'] = trip.user.last_name
         trip_dict['user_email'] = trip.user.email
         trip_dict['user_fbid'] = trip.user.fbid
         trip_dict['is_mine'] = (trip.user.id == session.get('user_id', None))
+        trip_dict['start_date_form'] = trip.start_date.strftime('%m/%d/%Y')
+        trip_dict['end_date_form'] = trip.end_date.strftime('%m/%d/%Y')
         result_dict.append(trip_dict)
 
     dump = json.dumps(result_dict)
