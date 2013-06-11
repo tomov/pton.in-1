@@ -76,9 +76,9 @@ def index(group_alias = None):
     if not session.get('logged_in'):
         return render_template('welcome.html', group_alias=group_alias)
     else:
-        users = User.query.all()
-        current_user = get_current_user()
-        return render_template('main.html', group_alias=group_alias, users=users, current_user=current_user)
+        #users = User.query.all()
+        #current_user = get_current_user()
+        return render_template('main.html', group_alias=group_alias)
 
 @app.route("/<group_alias>/login")
 @app.route("/login")
@@ -167,8 +167,8 @@ def format_response(msg=None, error=False):
 #----------------------------------------
 
 
-@app.route("/get_trips", methods=['GET'])
-def get_trips():
+@app.route("/get_trips_for_map", methods=['GET'])
+def get_trips_for_map():
     if not session.get('logged_in'):
         return format_response('User not logged in', True)
 
@@ -188,6 +188,35 @@ def get_trips():
         trip_dict['user_name'] = trip.user.first_name + ' ' + trip.user.last_name
         trip_dict['user_email'] = trip.user.email
         trip_dict['user_fbid'] = trip.user.fbid
+        result_dict.append(trip_dict)
+
+    dump = json.dumps(result_dict)
+    return dump
+
+@app.route("/get_trips_for_timeline", methods=['GET'])
+def get_trips_for_timeline():
+    if not session.get('logged_in'):
+        return format_response('User not logged in', True)
+
+    trips = Trip.query.limit(10).all()
+    result_dict = []
+    for trip in trips:
+        trip_dict = dict()
+        trip_dict['location_lat'] = trip.location_lat
+        trip_dict['location_long'] = trip.location_long
+        trip_dict['location_name'] = trip.location_name
+        trip_dict['start_date_short'] = trip.start_date.strftime('%b %d')
+        trip_dict['end_date_short'] = trip.end_date.strftime('%b %d')
+        trip_dict['start_date'] = trip.start_date.strftime('%Y-%m-%d')
+        trip_dict['end_date'] = trip.end_date.strftime('%Y-%m-%d')
+        trip_dict['doing_what'] = trip.doing_what
+        trip_dict['looking_for_roomies'] = trip.looking_for_roomies
+        trip_dict['looking_for_housing'] = trip.looking_for_housing
+        trip_dict['comment'] = trip.comment
+        trip_dict['user_name'] = trip.user.first_name + ' ' + trip.user.last_name
+        trip_dict['user_email'] = trip.user.email
+        trip_dict['user_fbid'] = trip.user.fbid
+        trip_dict['is_mine'] = (trip.user.id == session.get('user_id', None))
         result_dict.append(trip_dict)
 
     dump = json.dumps(result_dict)

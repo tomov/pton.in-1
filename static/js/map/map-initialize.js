@@ -1,17 +1,17 @@
 var map_global; // need this b/c of the ajax call -- there is no other way to pass map through:e
 
-function get_trips() {
+function get_trips_for_map() { // TODO perhaps merge with timeline one?
     $.ajax({
-        'url' : "get_trips",   // TODO FIXME Jinja
+        'url' : "get_trips_for_map",   // TODO FIXME Jinja
         'type' : 'GET',
         'dataType' : 'json',
         'data' : {},
-        'success' : get_trips_success,
-        'error' : get_trips_failure 
+        'success' : get_trips_for_map_success,
+        'error' : get_trips_for_map_failure 
     });
 }
 
-function get_trips_success(data, textStatus, jqXHR) {
+function get_trips_for_map_success(data, textStatus, jqXHR) {
     var trips = data;
     var map = map_global;
 
@@ -74,15 +74,15 @@ function get_trips_success(data, textStatus, jqXHR) {
     var mc = new MarkerClusterer(map, markers, mcOptions); 
 }
 
-function get_trips_failure(jqXHR, textStatus, errorThrown) {  // TODO remove
-    alert("something went wrong...");
-    console.log(jqXHR);
-    console.log(textStatus);
-    console.log(errorThrown);
-    console.trace();
+function get_trips_for_map_failure(jqXHR, textStatus, errorThrown) {
+   // alert("something went wrong...");
+   // console.log(jqXHR);
+   // console.log(textStatus);
+   // console.log(errorThrown);
+   // console.trace();
 }
 
-function initialize() {
+function initialize_map() {
     // init map
     var center = new google.maps.LatLng(20,0);
     var mapOptions = {
@@ -96,7 +96,7 @@ function initialize() {
     initialize_autocomplete(map);
 
     map_global = map;
-    get_trips(); // fetch all trips from db using ajax
+    get_trips_for_map(); // fetch all trips from db using ajax
 
     // upadte trips in timeline with those visible on map
     google.maps.event.addListener(map, 'bounds_changed', function() {
@@ -105,7 +105,7 @@ function initialize() {
     });
 }
 
-google.maps.event.addDomListener(window, 'load', initialize);
+google.maps.event.addDomListener(window, 'load', initialize_map);
 
 
 function initialize_autocomplete(map) {

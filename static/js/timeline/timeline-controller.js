@@ -1,82 +1,28 @@
-google.load("visualization", "1");
-
-// Set callback to run when API is loaded
-google.setOnLoadCallback(drawVisualization);
-
-// Called when the Visualization API is loaded.
-// TODO: this is where this is supposed to be
-// but then it's hard to talk to the backend
-function drawVisualization() {
-    // Create and populate a data table.
-    /*
-    Momchil: we're generating this in app_content.html
-    to make use of Jinja and populate with Flask data
-
-    data = new google.visualization.DataTable();
-    data.addColumn('datetime', 'start');
-    data.addColumn('datetime', 'end');
-    data.addColumn('string', 'content');
-    data.addColumn('string', 'group');
-    data.addColumn('string', 'className');
-
-    // create some random data
-    var names = ["Algie", "Barney", "Chris"];
-    for (var n = 0, len = names.length; n < len; n++) {
-        var name = names[n];
-        var now = new Date();
-        var end = new Date(now.getTime() - 12 * 60 * 60 * 1000);
-        for (var i = 0; i < 5; i++) {
-            var start = new Date(end.getTime() + Math.round(Math.random() * 5) * 60 * 60 * 1000);
-            var end = new Date(start.getTime() + Math.round(4 + Math.random() * 5) * 60 * 60 * 1000);
-
-            var r = Math.round(Math.random() * 2);
-            var availability = (r === 0 ? "Unavailable" : (r === 1 ? "Available" : "Maybe"));
-            var group = availability.toLowerCase();
-            var content = availability;
-            data.addRow([start, end, content, name, group]);
-        }
-    }
-    */
-
-    // specify options
-    var options = {
-        width:  "100%",
-        height: "99%",
-        layout: "box",
-        axisOnTop: true,
-        eventMargin: 10,  // minimal margin between events
-        eventMarginAxis: 0, // minimal margin beteen events and the axis
-        editable: true,
-        showNavigation: true
-    };
-
-    // Instantiate our timeline object.
-    timeline = new links.Timeline(document.getElementById('mytimeline'));
-
-    // register event listeners
-    google.visualization.events.addListener(timeline, 'edit', onEdit);
-    google.visualization.events.addListener(timeline, 'delete', onDelete);
-    google.visualization.events.addListener(timeline, 'select', onSelect);
-    google.visualization.events.addListener(timeline, 'ready', onReady);
-    google.visualization.events.addListener(timeline, 'add', onNew);
-    google.visualization.events.addListener(timeline, 'change', onChange);
-
-    // Draw our timeline with the created data and options
-    timeline.draw(dataView, options);
-    timeline.setRealData(dataTable);
-
-    // Set a customized visible range
-    var start = new Date(2013, 4, 15);
-    var end = new Date(2013, 8, 15);
-    timeline.setVisibleChartRange(start, end);
-}
-
 function getRandomName() {
     var names = ["Algie", "Barney", "Grant", "Mick", "Langdon"];
 
     var r = Math.round(Math.random() * (names.length - 1));
     return names[r];
 }
+
+// when we zoom the map, the timeline shows only the trips that are visible on the map
+function onZoom(bounds) {
+    // create array for viewable rows
+    save_rows = [];
+ 
+    // currently iterates through list... should prolly change to a 2d-tree or something evetually
+    for (var j=0;j<markers.length;j++) {
+        if (bounds.contains(markers[j].getPosition())) {
+            // add row if in bounds
+            save_rows.push(j);
+        }
+    }
+
+    dataView_global.setRows(save_rows);
+    timeline.draw(dataView_global);
+    htmltooltip.render();
+}
+
 
 function getSelectedRow() {
     var row = undefined;
@@ -96,7 +42,7 @@ function print_date(date) {
 }
 
 function onChange() {
-    var data = dataView;
+    var data = dataView_global;
     var row = getSelectedRow();
     if (row == undefined) return;
     var change_dates_link = data.getValue(row, 16);
@@ -105,11 +51,11 @@ function onChange() {
     start_datetime = Date.parse(start_datetime) / 1000;
     end_datetime = Date.parse(end_datetime) / 1000; // it's milliseconds... convert to unix timestamp, so on python side we can convert from unix timestamp to mysql datetime
     // update the date times for the showTripBox thing
-    realRow = dataView.getViewRows()[row];
+    realRow = dataView_global.getViewRows()[row];
     start_date = print_date(new Date(start_datetime * 1000));
     end_date = print_date(new Date(end_datetime * 1000));
-    dataTable.setValue(row, 12, start_date);
-    dataTable.setValue(row, 13, end_date);
+    dataTable_global.setValue(row, 12, start_date);
+    dataTable_global.setValue(row, 13, end_date);
     $.ajax({
         'url' : change_dates_link,
         'type' : 'GET',
@@ -129,7 +75,7 @@ function onChange() {
 }
 
 function onDelete() {
-    var data = dataView;
+    var data = dataView_global;
     var row = getSelectedRow();
     if (row == undefined) return;
     var delete_link = data.getValue(row, 15);
@@ -147,16 +93,16 @@ function onDelete() {
 }
 
 function onSelect() {
-    var data = dataView; 
+    var data = dataView_global; 
     var row = getSelectedRow();
     if (row == undefined) return;
     var link = data.getValue(row, 7);
     var is_mine = data.getValue(row, 8);
-    if (link && is_mine == 'False') {
+    if (link && !is_mine) {
         // someone else and she's looking for roommates/housing
         // => open email
         window.open(link, '_blank');
-    } else if (is_mine == 'True') {
+    } else if (is_mine) {
         // pop up edit box -- handled in onEdit
     }
 }
@@ -170,7 +116,7 @@ function strip(html)
 
 // Make a callback function for the select event
 var onEdit = function (event) {
-    var data = dataView;
+    var data = dataView_global;
     var row = getSelectedRow();
     if (row == undefined) return;
     // it's my tab => edit it
