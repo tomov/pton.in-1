@@ -1,3 +1,87 @@
+var map_global; // need this b/c of the ajax call -- there is no other way to pass map through:e
+
+function get_trips() {
+    $.ajax({
+        'url' : "get_trips",   // TODO FIXME Jinja
+        'type' : 'GET',
+        'dataType' : 'json',
+        'data' : {},
+        'success' : get_trips_success,
+        'error' : get_trips_failure 
+    });
+}
+
+function get_trips_success(data, textStatus, jqXHR) {
+    var trips = data;
+    var map = map_global;
+
+    // init data points
+    info_text = new Array();
+    markers = new Array();
+    marker_idx = 0;
+
+    // pretty pin icon 
+    var getPinIcon = function(image) {
+       return new google.maps.MarkerImage(
+         image, null, null, null,
+         new google.maps.Size(30,30));
+    };
+
+    // pretty info window
+    var infowindow = new google.maps.InfoWindow({content: 'blank'});
+
+    // populate trips on map
+    for (var i = 0; i < trips.length; i++)
+    {
+        // create pin on map
+        var trip = trips[i]
+        // each pt has latlng + image (that's it)
+        var noiseScale = 0.1; // pulled out of Momchil's ass
+        var noiseLat = (Math.random() - 0.5) * noiseScale;
+        var noiseLng = (Math.random() - 0.5) * noiseScale;
+        var latlng = new google.maps.LatLng(trip['location_lat'] + noiseLat, trip['location_long'] + noiseLng);
+        var image = "http://graph.facebook.com/" + trip['user_fbid'] + "/picture";
+        var pinIcon = getPinIcon(image);
+        var marker = new google.maps.Marker({
+            position: latlng,
+            map: map,
+            icon: pinIcon,
+        });
+
+        markers.push(marker); // for zoomin/zoom out changes
+
+        // add info bubble to marker
+        marker_idx++;
+        info_text[marker_idx] = trip['user_name'] + "<br /><br />I'll be in " + trip['location_name'] 
+                     + " from " + trip['start_date_short'] + " to " + trip['end_date_short'] + "."
+                     + " " + trip['doing_what'] + "<br />"
+                     + (trip['looking_for_roomies'] ? "Looking for roommates.<br />" : "")
+                     + (trip['looking_for_housing'] ? "Looking for housing.<br />" : "")
+                     + trip['comment'] + "<br />"
+                     + "<a href='mailto:" + trip['user_email'] + "?subject=[pton.in] Hey, regarding your trip to " + trip['location_name'] + " on " + trip['start_date_short'] + "' target='_blank'>Get in touch</a>";
+
+        google.maps.event.addListener(marker, 'click', (function(event, index) { 
+            return function() {
+                infowindow.content = info_text[index];
+                infowindow.open(map, this);
+            }
+        })(marker, marker_idx));
+         
+    }
+
+    // markerclusterer -- this makes things pretty
+    var mcOptions = {gridSize: 50, maxZoom: 10};
+    var mc = new MarkerClusterer(map, markers, mcOptions); 
+}
+
+function get_trips_failure(jqXHR, textStatus, errorThrown) {  // TODO remove
+    alert("something went wrong...");
+    console.log(jqXHR);
+    console.log(textStatus);
+    console.log(errorThrown);
+    console.trace();
+}
+
 function initialize() {
     // init map
     var center = new google.maps.LatLng(20,0);
@@ -8,6 +92,17 @@ function initialize() {
         mapTypeId: google.maps.MapTypeId.ROADMAP,
     }
     var map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
+
+    initialize_autocomplete(map);
+
+    map_global = map;
+    get_trips(); // fetch all trips from db using ajax
+
+    // upadte trips in timeline with those visible on map
+    google.maps.event.addListener(map, 'bounds_changed', function() {
+        var bounds = map.getBounds();
+        //onZoom(bounds);             TODO
+    });
 }
 
 google.maps.event.addDomListener(window, 'load', initialize);
