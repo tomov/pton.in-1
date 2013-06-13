@@ -10,7 +10,9 @@ function get_trips_for_timeline() { // TODO perhaps merge with map one?
         'dataType' : 'json',
         'data' : {},
         'success' : get_trips_for_timeline_success,
-        'error' : get_trips_for_timeline_failure 
+        'error' : function(jqXHR, textStatus, errorThrown) {
+            alert('Something went wrong with the server -- couldn\'t fetch trips...');
+        }
     });
 }
 
@@ -112,16 +114,6 @@ function get_trips_for_timeline_success(data, textStatus, jqXHR) {
     
     updateTimelineHeight(); // to compress timeline
 }
-
-
-function get_trips_for_timeline_failure(jqXHR, textStatus, errorThrown) {  // TODO remove
-    alert("something went wrong...");
-    console.log(jqXHR);
-    console.log(textStatus);
-    console.log(errorThrown);
-    console.trace();
-}
-
 
 function initialize_timeline() {
     var dataTable = new google.visualization.DataTable();

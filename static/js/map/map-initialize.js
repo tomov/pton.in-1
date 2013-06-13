@@ -5,7 +5,9 @@ function get_trips_for_map() { // TODO perhaps merge with timeline one?
         'dataType' : 'json',
         'data' : {},
         'success' : get_trips_for_map_success,
-        'error' : get_trips_for_map_failure 
+        'error' : function(jqXHR, textStatus, errorThrown) {
+            alert('Something went wrong with the server -- couldn\'t fetch trips for map...');
+        } 
     });
 }
 
@@ -70,14 +72,6 @@ function get_trips_for_map_success(data, textStatus, jqXHR) {
     // markerclusterer -- this makes things pretty
     var mcOptions = {gridSize: 50, maxZoom: 10};
     var mc = new MarkerClusterer(map, markers_global, mcOptions); 
-}
-
-function get_trips_for_map_failure(jqXHR, textStatus, errorThrown) {
-   // alert("something went wrong...");
-   // console.log(jqXHR);
-   // console.log(textStatus);
-   // console.log(errorThrown);
-   // console.trace();
 }
 
 function initialize_map() {

@@ -17,28 +17,32 @@ function onZoom(bounds) {
     // currently iterates through list... should prolly change to a 2d-tree or something evetually
     for (var j=0;j<markers_global.length;j++) {
         if (bounds.contains(markers_global[j].getPosition())) {
-            if (!show_all_trips_in_timeline_global) {
-                // break early if we can -- speeds things up
-                group = dataTable_global.getValue(j, 3);
-                if (group != last_group) {
-                    people_count++;
-                    last_group = group;
-                }
-                if (people_count > TIMELINE_PEOPLE_LIMIT) {
-                    break;
-                }
+            // break early if we can -- speeds things up
+            // TODO might not be necessary tho... and we can probs use save_rows.length instead of people_count since we only need an overestimate... look into it
+            group = dataTable_global.getValue(j, 3);
+            if (group != last_group) {
+                people_count++;
+                last_group = group;
+            }
+            if (!show_all_trips_in_timeline_global && people_count > TIMELINE_PEOPLE_LIMIT) {
+                people_count--;
+                break;
             }
             // add row if in bounds
             save_rows.push(j);
         }
     }
     dataView_global.setRows(save_rows);
+    updateTimelineHeight(people_count);
     timeline.draw(dataView_global);
     updateTimelineHeight();
 }
 
-function updateTimelineHeight() {
-    var row_count = timeline.groups.length;
+function updateTimelineHeight(row_count) {
+    if (typeof row_count === 'undefined') {
+       row_count = timeline.groups.length; // it's kind of catch 22 -- timeline.groups becomes updated after we call timeline.draw, but timeline.draw draws to fit its container which we must first resize here... 
+       // so what we do is the following: resize the container first to something at least as big as what we expect it to be, draw the timeline, then resize container again. Kinda toolish but works 
+    }
     if (!show_all_trips_in_timeline_global) {
         if (row_count > TIMELINE_PEOPLE_LIMIT) {
             row_count = TIMELINE_PEOPLE_LIMIT;

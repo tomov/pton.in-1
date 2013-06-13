@@ -2,11 +2,16 @@ import os
 from flask import Flask, request, render_template, send_from_directory, Response, url_for, session, redirect, flash
 from flask_oauth import OAuth
 import json
+import pprint
 
 import model
 from model import db
 from model import User, Trip, Group, Alias
 from model import create_db
+
+from wtforms.ext.sqlalchemy.orm import model_form
+from forms import NewTripForm 
+
 from constants import *
 from util import *
 
@@ -78,7 +83,9 @@ def index(group_alias = None):
     else:
         #users = User.query.all()
         #current_user = get_current_user()
-        return render_template('main.html', group_alias=group_alias)
+        trip = Trip(session.get('user_id'))
+        form = NewTripForm(obj=trip, secret_key=os.environ[SECRET_KEY])
+        return render_template('main.html', group_alias=group_alias, form=form)
 
 @app.route("/<group_alias>/login")
 @app.route("/login")
@@ -226,6 +233,25 @@ def get_trips_for_timeline():
     dump = json.dumps(result_dict)
     return dump
 
+@app.route("/add_trip", methods=['POST'])
+def add_trip():
+    if not session.get('logged_in'):
+        return format_response('User not logged in', True)
+
+   # print 'ADD TRIP!!!!!!!!!!!! -----------------------------------------'
+   # print request.form
+    # must be something like 
+  # ImmutableMultiDict([('comment', u''), ('csrf_token', u'20130614005315##cdabb6a135c2c4fd87c945f5d6ac5cf0f2550271'), ('doing_what', u'chillin '), ('end_date', u'06/26/2013'), ('location_long', u'-74.0059731'), ('looking_for_housing', u'y'), ('location_name', u'New York, NY'), ('location_lat', u'40.7143528'), ('start_date', u'06/26/2013')]) 
+
+    trip = Trip(session.get('user_id'))
+    form = NewTripForm(obj=trip, secret_key=os.environ[SECRET_KEY])
+    if form.validate_on_submit():
+        form.populate_obj(trip)
+        db.session.add(trip)
+        db.session.commit()
+        return format_response('SUCCESS!');
+
+    return format_response('Could not add trip for some reason...', True) 
 
 #----------------------------------------
 # launch

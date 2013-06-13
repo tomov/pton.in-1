@@ -2,6 +2,41 @@
 
   <div class="populate">
 
+
+  <center>
+  <h1>Where will you be this summer?</h1>
+  <!--<form method="POST" id="populate_form" action="{{ url_for('add_trip') }}"> -->
+  <h3 class="sub">Tell your friends and find out where they'll be!</h3>
+    {{ form.csrf_token }}
+    {{ form.location_name(placeholder='City (please select)') }}<br />
+    {{ form.doing_what(placeholder='Doing What?') }}<br />
+    {{ form.location_lat }}
+    {{ form.location_long }}
+    {{ form.start_date(placeholder='Start Date')  }}
+    {{ form.end_date(placeholder='End Date')  }}<br />
+    <p>
+      {{ form.looking_for_roomies }} Looking for Roommates &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp;
+      {{ form.looking_for_housing }} Looking for Housing &nbsp; &nbsp; &nbsp; &nbsp;
+    </p>
+    <div id="add-comment-link">
+      <a href="#">Click to add more info (e.g. how big is your group, what kind of housing you have, etc).</a>
+    </div>
+    <div class="hidden" id="add-comment-field">
+      {{ form.comment(placeholder='Additional Comments') }}<br>
+    </div>
+    <div>
+      <input class="btn" id='submit_trip_button' type="submit" value="Submit">
+      <!--</form>                   -->
+
+      <form method="POST" id="delete-form" action="">
+        <div id="delete-trip-button" hidden><br /><input id="delete-trip" class="delete" type="submit" style="color: white; background-color: red;" value="Delete Trip"></div>
+      </form>
+      <a id="hide-link" href="#">hide</a>
+    </div>
+  </center>
+
+<!--
   <center>
     <h1>Where will you be this summer?</h1>
     <h3 class="sub">Tell your friends and find out where they'll be!</h3>
@@ -30,6 +65,6 @@
     </div>
     <a id="hide-link" href="#">hide</a>
   </center>
-
+-->
   </div>
 </div>
