@@ -238,11 +238,6 @@ def add_trip():
     if not session.get('logged_in'):
         return format_response('User not logged in', True)
 
-   # print 'ADD TRIP!!!!!!!!!!!! -----------------------------------------'
-   # print request.form
-    # must be something like 
-  # ImmutableMultiDict([('comment', u''), ('csrf_token', u'20130614005315##cdabb6a135c2c4fd87c945f5d6ac5cf0f2550271'), ('doing_what', u'chillin '), ('end_date', u'06/26/2013'), ('location_long', u'-74.0059731'), ('looking_for_housing', u'y'), ('location_name', u'New York, NY'), ('location_lat', u'40.7143528'), ('start_date', u'06/26/2013')]) 
-
     trip = Trip(session.get('user_id'))
     form = NewTripForm(obj=trip, secret_key=os.environ[SECRET_KEY])
     if form.validate_on_submit():

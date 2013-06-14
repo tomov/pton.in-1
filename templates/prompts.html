@@ -5,7 +5,6 @@
 
   <center>
   <h1>Where will you be this summer?</h1>
-  <!--<form method="POST" id="populate_form" action="{{ url_for('add_trip') }}"> -->
   <h3 class="sub">Tell your friends and find out where they'll be!</h3>
     {{ form.csrf_token }}
     {{ form.location_name(placeholder='City (please select)') }}<br />
@@ -27,7 +26,6 @@
     </div>
     <div>
       <input class="btn" id='submit_trip_button' type="submit" value="Submit">
-      <!--</form>                   -->
 
       <form method="POST" id="delete-form" action="">
         <div id="delete-trip-button" hidden><br /><input id="delete-trip" class="delete" type="submit" style="color: white; background-color: red;" value="Delete Trip"></div>
@@ -36,35 +34,5 @@
     </div>
   </center>
 
-<!--
-  <center>
-    <h1>Where will you be this summer?</h1>
-    <h3 class="sub">Tell your friends and find out where they'll be!</h3>
-    <input id="location_name" name="location_name" placeholder="City (SELECT FROM DROPDOWN)" type="text" value=""><br>
-    <input id="doing_what" name="doing_what" placeholder="Doing What?" type="text" value=""><br>
-    <input id="location_lat" name="location_lat" type="hidden" value="">
-    <input id="location_long" name="location_long" type="hidden" value="">
-    <input id="start_date" name="start_date" placeholder="Start Date" type="text" value="">
-    <input id="end_date" name="end_date" placeholder="End Date" type="text" value=""><br>
-    <p>
-      <input id="looking_for_roomies" name="looking_for_roomies" type="checkbox" value="y"> &nbsp; Looking for Roommates &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-&nbsp; &nbsp; &nbsp; &nbsp;
-      <input id="looking_for_housing" name="looking_for_housing" type="checkbox" value="y"> &nbsp; Looking for Housing &nbsp; &nbsp; &nbsp; &nbsp; 
-    </p>
-    <div id="add-comment-link"><a href="#">Click to add more info (e.g. how big is your group, what kind of housing you have, etc).</a>
-    </div>
-    <div class="hidden" id="add-comment-field">
-      <textarea id="comment" name="comment" placeholder="Additional Comments"></textarea><br>
-    </div>
-    <div>
-      <input class="btn" type="submit" value="Submit">
-
-      <form method="POST" id="delete-form" action="">
-        <div id="delete-trip-button" hidden><br /><input id="delete-trip" class="delete" type="submit" style="color: white; background-color: red;" value="Delete Trip"></div>
-      </form>
-    </div>
-    <a id="hide-link" href="#">hide</a>
-  </center>
--->
   </div>
 </div>
