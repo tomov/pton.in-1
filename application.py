@@ -70,9 +70,18 @@ def get_current_user():
         return User.query.filter_by(id=session['user_id']).first()
     return None
 
+def get_group(group_alias):
+    alias = Alias.query.filter_by(name=group_alias).first()
+    if alias:
+        assert alias.group
+        return alias.group 
+    return None
+
 #----------------------------------------
 # controllers
 #----------------------------------------
+
+########### user stuff #######################
 
 @app.route("/<group_alias>")  # doesn't override /login, etc controller urls
 @app.route("/")
@@ -80,11 +89,19 @@ def index(group_alias = None):
     if not session.get('logged_in'):
         return render_template('welcome.html', group_alias=group_alias)
     else:
-        #users = User.query.all()
-        #current_user = get_current_user()
-        trip = Trip(session.get('user_id'))
+        user = get_current_user()
+        # generate form
+        trip = Trip(user.id)
         form = NewTripForm(obj=trip, secret_key=os.environ[SECRET_KEY])
-        return render_template('main.html', group_alias=group_alias, form=form)
+        # see if we need to ask user to add trip
+        trip_count = Trip.query.filter_by(user_id=user.id).count()
+        show_prompt = (trip_count == 0)
+        # figure out group stuff
+        group = get_group(group_alias)
+        if group and group not in user.groups:
+            user.groups.append(group)
+            db.session.commit()
+        return render_template('main.html', group_alias=group_alias, group=group, form=form, show_prompt=show_prompt)
 
 @app.route("/<group_alias>/login")
 @app.route("/login")
@@ -105,6 +122,20 @@ def logout(group_alias = None):
         return redirect(url_for("index"))
     else:
         return redirect(url_for("index", group_alias=group_alias))
+
+@app.route("/leave_group/<group_id>")
+def leave_group(group_id):
+    if not session.get('logged_in'):
+        return format_response('User not logged in', True)
+    user = get_current_user()
+    group = Group.query.filter_by(id=group_id).first()
+    if not group:
+        return format_response('No trip with given id', True)
+    user.groups.remove(group)
+    db.session.commit()
+    return redirect(url_for("index"))
+
+############# group stuff ###########################
 
 
 #----------------------------------------
