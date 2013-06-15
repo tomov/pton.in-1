@@ -79,7 +79,7 @@ function onChange() {
     var end_datetime = data.getValue(row, 1);
     start_datetime = Date.parse(start_datetime) / 1000;
     end_datetime = Date.parse(end_datetime) / 1000; // it's milliseconds... convert to unix timestamp, so on python side we can convert from unix timestamp to mysql datetime
-    // update the date times for the prompt
+    // update the date times in table for the edit prompt
     realRow = dataView_global.getViewRows()[row];
     start_date = print_date(new Date(start_datetime * 1000));
     end_date = print_date(new Date(end_datetime * 1000));

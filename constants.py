@@ -1,5 +1,5 @@
 class DatabaseConstants:
-    DATABASE_URI_TEMPLATE = "mysql://ebroot:princetoninblank@aa6fkakt0fky17.c7vhnm8xo98e.us-east-1.rds.amazonaws.com/%s?init_command=set%%20character%%20set%%20utf8"
+    DATABASE_URI_TEMPLATE = "mysql://ebroot:princetoninblank@aa1p36bffnwwqjf.c7vhnm8xo98e.us-east-1.rds.amazonaws.com/%s?init_command=set%%20character%%20set%%20utf8"
     # old ptonin
     #DATABASE_URI_TEMPLATE = "mysql://ebroot:princetoninblank@aa1rdu5arf3spky.c7vhnm8xo98e.us-east-1.rds.amazonaws.com/%s?init_command=set%%20character%%20set%%20utf8"
     # local

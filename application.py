@@ -344,6 +344,24 @@ def change_dates(trip_id):
     db.session.commit()
     return format_response('SUCCESS!')
 
+@app.route("/change_latlong/<trip_id>", methods = ['GET'])
+def change_latlong(trip_id):
+    if not session.get('logged_in'):
+        return format_response('User not logged in', True)
+    trip = Trip.query.filter_by(id=trip_id).first()
+    if not trip:
+        return format_response('No trip with given id', True)
+    if trip.user.id != session.get('user_id'):
+        return format_response('Trip does not belong to logged in user', True)
+
+    location_lat = request.args.get('location_lat')
+    location_long = request.args.get('location_long')
+    trip.location_lat = location_lat
+    trip.location_long = location_long
+    db.session.commit()
+    return format_response('SUCCESS!')
+
+
 #----------------------------------------
 # launch
 #----------------------------------------

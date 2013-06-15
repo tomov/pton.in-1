@@ -35,7 +35,7 @@ function clearTripBox() {
     $('#location_long').val('');
 }
 
-function populateFormFromDataTable(data, row) { // data is either dataTable or dataView, row is the row index
+function populateFormFromDataTable(data, row) { // data is either dataTable or dataView, row is the row index... TODO a bit of coupling with dataTable_global and its internal structure
     var location_name = data.getValue(row, 9);
     var start_date = data.getValue(row, 12);
     var end_date = data.getValue(row, 13);

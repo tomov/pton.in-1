@@ -47,6 +47,24 @@ function change_dates(trip_id, start_datetime, end_datetime) { // note dates mus
     });
 }
 
+function change_latlong(trip_id, location_lat, location_long) {
+    $.ajax({
+        'url' : 'change_latlong/' + trip_id, // TODO {{ url_for(...
+        'type' : 'GET',
+        'dataType' : 'json',
+        'data' : {
+            'location_lat': location_lat,
+            'location_long': location_long
+        },
+        'success' : function(data, textStatus, jqXHR) {
+            // alert('Trip changed successfully!');
+        },
+        'error' : function(jqXHR, textStatus, errorThrown) {
+            alert('Something went wrong with the server -- couldn\'t update the trip...');
+        }
+    });
+}
+
 function delete_trip(trip_id, callback) {
     $.ajax({
         'url' : 'delete_trip/' + trip_id,  // TODO {{ url_for(...
