@@ -1,6 +1,6 @@
 class DatabaseConstants:
-    #DATABASE_URI_TEMPLATE = "mysql://ebroot:princetoninblank@aa1rdu5arf3spky.c7vhnm8xo98e.us-east-1.rds.amazonaws.com/%s?init_command=set%%20character%%20set%%20utf8"
-    DATABASE_URI_TEMPLATE = "mysql://root:mainatati@localhost/%s?init_command=set%%20character%%20set%%20utf8"
+    DATABASE_URI_TEMPLATE = "mysql://ebroot:princetoninblank@aa1rdu5arf3spky.c7vhnm8xo98e.us-east-1.rds.amazonaws.com/%s?init_command=set%%20character%%20set%%20utf8"
+    #DATABASE_URI_TEMPLATE = "mysql://root:mainatati@localhost/%s?init_command=set%%20character%%20set%%20utf8"
     DATABASE_NAME = 'pton_in'
     DATABASE_URI = DATABASE_URI_TEMPLATE % DATABASE_NAME
 
