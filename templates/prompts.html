@@ -1,7 +1,5 @@
 <div id="location_prompt"  style="position:absolute;width:100%;">
-
   <div class="populate">
-
 
   <center>
   <h1>Where will you be this summer?</h1>
@@ -18,18 +16,14 @@
 &nbsp; &nbsp; &nbsp; &nbsp;
       {{ form.looking_for_housing }} Looking for Housing &nbsp; &nbsp; &nbsp; &nbsp;
     </p>
-    <div id="add-comment-link">
-      <a href="#">Click to add more info (e.g. how big is your group, what kind of housing you have, etc).</a>
-    </div>
-    <div class="hidden" id="add-comment-field">
-      {{ form.comment(placeholder='Additional Comments') }}<br>
-    </div>
+    {{ form.comment(placeholder='Additional Comments') }}<br>
     <div>
-      <input class="btn" id='submit_trip_button' type="submit" value="Submit">
+      <input class="btn" id='add-trip-button' type="submit" value="Add Trip">
+      <div id="edit-trip-panel" hidden>
+        <p><input class="btn" id='edit-trip-button' type="submit" value="Edit Trip"></p>
+        <p><input id="delete-trip-button" class="delete" type="submit" style="color: white; background-color: red;" value="Delete Trip"></p>
+      </div>
 
-      <form method="POST" id="delete-form" action="">
-        <div id="delete-trip-button" hidden><br /><input id="delete-trip" class="delete" type="submit" style="color: white; background-color: red;" value="Delete Trip"></div>
-      </form>
       <a id="hide-link" href="#">hide</a>
     </div>
   </center>

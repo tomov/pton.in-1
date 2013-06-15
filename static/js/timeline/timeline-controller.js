@@ -1,6 +1,7 @@
 TIMELINE_ROW_HEIGHT = 46.5; // TODO find more legit way to figure it out...
 TIMELINE_PEOPLE_LIMIT = 10;         // how many trips to show by default -- this is to speed up zooming / loading
 show_all_trips_in_timeline_global = false;
+trip_id_global = -1;       // current trip to be edited; this is changed in onEdit and used in location_prompt
 
 // when we zoom the map, the timeline shows only the trips that are visible on the map
 function onZoom(bounds) {
@@ -64,7 +65,7 @@ function getSelectedRow() {
     return row;
 }
 
-// print Date object in format convenient for the form calendar for editing the trip (i.e. showTripBox)
+// print Date object in format convenient for the form calendar for editing the trip (i.e. the prompt)
 function print_date(date) {
     var str = (date.getMonth() + 1).toString() + '/' + date.getDate() + '/' + date.getFullYear();
     return str;
@@ -74,19 +75,19 @@ function onChange() {
     var data = dataView_global;
     var row = getSelectedRow();
     if (row == undefined) return;
-    var change_dates_link = data.getValue(row, 16);
+    var trip_id = data.getValue(row, 15);
     var start_datetime = data.getValue(row, 0);
     var end_datetime = data.getValue(row, 1);
     start_datetime = Date.parse(start_datetime) / 1000;
     end_datetime = Date.parse(end_datetime) / 1000; // it's milliseconds... convert to unix timestamp, so on python side we can convert from unix timestamp to mysql datetime
-    // update the date times for the showTripBox thing
+    // update the date times for the prompt
     realRow = dataView_global.getViewRows()[row];
     start_date = print_date(new Date(start_datetime * 1000));
     end_date = print_date(new Date(end_datetime * 1000));
     dataTable_global.setValue(row, 12, start_date);
     dataTable_global.setValue(row, 13, end_date);
     $.ajax({
-        'url' : change_dates_link,
+        'url' : 'change_dates/' + trip_id, // TODO {{ url_for(...
         'type' : 'GET',
         'dataType' : 'json',
         'data' : {
@@ -107,9 +108,9 @@ function onDelete() {
     var data = dataView_global;
     var row = getSelectedRow();
     if (row == undefined) return;
-    var delete_link = data.getValue(row, 15);
+    var trip_id = data.getValue(row, 15);
     $.ajax({
-        'url' : delete_link,
+        'url' : 'delete_trip/' + trip_id,  // TODO {{ url_for(...
         'type' : 'GET',
         'dataType' : 'json',
         'success' : function(data, textStatus, jqXHR) {
@@ -143,15 +144,10 @@ function strip(html)
     return tmp.textContent||tmp.innerText;
 }
 
-// Make a callback function for the select event
 var onEdit = function (event) {
     var data = dataView_global;
     var row = getSelectedRow();
     if (row == undefined) return;
-    // it's my tab => edit it
-    // note in this case, link has completely different meaning
-    var link = data.getValue(row, 7);
-    $('#populate_form').attr('action', link);
     var location_name = data.getValue(row, 9);
     var start_date = data.getValue(row, 12);
     var end_date = data.getValue(row, 13);
@@ -159,7 +155,7 @@ var onEdit = function (event) {
     var comment = data.getValue(row, 6);
     var location_lat = data.getValue(row, 10);
     var location_long = data.getValue(row, 11);
-    var delete_link = data.getValue(row, 15);
+    trip_id_global = data.getValue(row, 15); // this is crucial for the form to work
     $('#location_name').val(location_name);
     $('#doing_what').val(doing_what);
     $('#start_date').val(start_date);
@@ -167,27 +163,11 @@ var onEdit = function (event) {
     $('#comment').val(comment);
     $('#location_lat').val(location_lat);
     $('#location_long').val(location_long);
-    $('#delete-trip-button').show();
-    $('#delete-form').attr('action', delete_link + '/1'); // call the redirect-version of delete (see delete_trip in application.py)
-    showTripBox();
-    /*
-    // historic -- from example
-    var row = getSelectedRow();
-    var content = data.getValue(row, 2);
-    var availability = strip(content);
-    var newAvailability = prompt("Enter status\n\n" +
-            "Choose from: Available, Unavailable, Maybe", availability);
-    if (newAvailability != undefined) {
-        var newContent = newAvailability;
-        data.setValue(row, 2, newContent);
-        data.setValue(row, 4, newAvailability.toLowerCase());
-        timeline.draw(view);
-    }*/
+    showEditTripPrompt();
 };
 
 var onNew = function () {
-    clearTripBox();
-    showTripBox();
+    showAddTripPrompt();
 };
 
 function onReady() {

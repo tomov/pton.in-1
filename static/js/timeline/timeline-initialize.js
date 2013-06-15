@@ -35,8 +35,6 @@ function get_trips_for_timeline_success(data, textStatus, jqXHR) {
 
         var availability = "Available";
         var link = mailtolink;
-        var delete_link = ''; // can't delete by default
-        var change_dates_link = ''; // same -- can't edit unless it's your trip
         if (trip['looking_for_roomies'] || trip['looking_for_housing']) {
             availability = "Unavailable";
         }
@@ -53,21 +51,17 @@ function get_trips_for_timeline_success(data, textStatus, jqXHR) {
         var is_mine = trip['is_mine'];
 
         if (is_mine) {
-            // in this case, link == action of the edit form
-            // completely different... lol
-            link = 'mamam'; // TODO url_for('populate', trip_id=trip.id)
-            delete_link = 'sdfs'; // TODO" url_for('delete_trip', trip_id=trip.id) ";
-            change_dates_link = 'sdfds'; // TODO " url_for('change_dates', trip_id=trip.id) "
             editable = true;
         }
         // those below are used for edit button, they're just passing the trip deets to the box
+        var trip_id = trip['id'].toString();
         var location_name = trip['location_name']; 
         var location_lat = trip['location_lat'].toString();
         var location_long = trip['location_long'].toString(); 
         var start_date = trip['start_date_form']; // these are strings to be compatible with the wtform fields (see form.py)
         var end_date = trip['end_date_form'];
 
-        dataTable_global.addRow([start, end, content, name, group, doing_what, comment, link, is_mine, location_name, location_lat, location_long, start_date, end_date, editable, delete_link, change_dates_link]);
+        dataTable_global.addRow([start, end, content, name, group, doing_what, comment, link, is_mine, location_name, location_lat, location_long, start_date, end_date, editable, trip_id]);
             
     }
 
@@ -136,8 +130,7 @@ function initialize_timeline() {
     dataTable.addColumn('string', 'start_date');
     dataTable.addColumn('string', 'end_date');
     dataTable.addColumn('boolean', 'editable');
-    dataTable.addColumn('string', 'delete_link');
-    dataTable.addColumn('string', 'change_dates_link');
+    dataTable.addColumn('string', 'trip_id');
 
     var dataView = new google.visualization.DataView(dataTable);
     dataView_global = dataView;

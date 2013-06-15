@@ -3,15 +3,14 @@ from flask import Flask, request, render_template, send_from_directory, Response
 from flask_oauth import OAuth
 import json
 import pprint
+from datetime import datetime
+from wtforms.ext.sqlalchemy.orm import model_form
 
+from forms import NewTripForm 
 import model
 from model import db
 from model import User, Trip, Group, Alias
 from model import create_db
-
-from wtforms.ext.sqlalchemy.orm import model_form
-from forms import NewTripForm 
-
 from constants import *
 from util import *
 
@@ -209,6 +208,7 @@ def get_trips_for_timeline():
     result_dict = []
     for trip in trips:
         trip_dict = dict()
+        trip_dict['id'] = trip.id
         trip_dict['location_lat'] = trip.location_lat
         trip_dict['location_long'] = trip.location_long
         trip_dict['location_name'] = trip.location_name
@@ -247,6 +247,55 @@ def add_trip():
         return format_response('SUCCESS!');
 
     return format_response('Could not add trip for some reason...', True) 
+
+# TODO
+@app.route("/edit_trip/<trip_id>", methods=['POST'])
+def edit_trip(trip_id):
+    if not session.get('logged_in'):
+        return format_response('User not logged in', True)
+    trip = Trip.query.filter_by(id=trip_id).first()
+    if not trip:
+        return format_response('No trip with given id', True)
+    if trip.user.id != session.get('user_id'):
+        return format_response('Trip does not belong to logged in user', True)
+
+    form = NewTripForm(obj=trip, secret_key=os.environ[SECRET_KEY])
+    if form.validate_on_submit():
+        form.populate_obj(trip)
+        db.session.commit()
+        return format_response('SUCCESS!');
+    return format_response('Could not edit trip for some reason...', True)
+
+@app.route("/delete_trip/<trip_id>", methods = ['GET'])
+def delete_trip(trip_id):
+    if not session.get('logged_in'):
+        return format_response('User not logged in', True)
+    trip = Trip.query.filter_by(id=trip_id).first()
+    if not trip:
+        return format_response('No trip with given id', True)
+    if trip.user.id != session.get('user_id'):
+        return format_response('Trip does not belong to logged in user', True)
+
+    db.session.delete(trip)
+    db.session.commit()
+    return format_response('SUCCESS!')
+
+@app.route("/change_dates/<trip_id>", methods = ['GET'])
+def change_dates(trip_id):
+    if not session.get('logged_in'):
+        return format_response('User not logged in', True)
+    trip = Trip.query.filter_by(id=trip_id).first()
+    if not trip:
+        return format_response('No trip with given id', True)
+    if trip.user.id != session.get('user_id'):
+        return format_response('Trip does not belong to logged in user', True)
+
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    trip.start_date = datetime.fromtimestamp(float(start_date))
+    trip.end_date = datetime.fromtimestamp(float(end_date))
+    db.session.commit()
+    return format_response('SUCCESS!')
 
 #----------------------------------------
 # launch
