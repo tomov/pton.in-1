@@ -203,39 +203,18 @@ def format_response(msg=None, error=False):
 # api 
 #----------------------------------------
 
-
-@app.route("/get_trips_for_map", methods=['GET'])
-def get_trips_for_map():
+@app.route("/<group_alias>/get_trips", methods=['GET'])
+@app.route("/get_trips", methods=['GET'])
+def get_trips(group_alias = None):
     if not session.get('logged_in'):
         return format_response('User not logged in', True)
 
-    trips = Trip.query.all()
-    result_dict = []
-    for trip in trips:
-        trip_dict = dict()
-        trip_dict['location_lat'] = trip.location_lat
-        trip_dict['location_long'] = trip.location_long
-        trip_dict['location_name'] = trip.location_name
-        trip_dict['start_date_short'] = trip.start_date.strftime('%b %d')
-        trip_dict['end_date_short'] = trip.end_date.strftime('%b %d')
-        trip_dict['doing_what'] = trip.doing_what
-        trip_dict['looking_for_roomies'] = trip.looking_for_roomies
-        trip_dict['looking_for_housing'] = trip.looking_for_housing
-        trip_dict['comment'] = trip.comment
-        trip_dict['user_name'] = trip.user.first_name + ' ' + trip.user.last_name
-        trip_dict['user_email'] = trip.user.email
-        trip_dict['user_fbid'] = trip.user.fbid
-        result_dict.append(trip_dict)
+    group = get_group(group_alias)
+    if group:
+        trips = Trip.query.filter(Trip.user.has(User.groups.any(Group.id==group.id)))
+    else:
+        trips = Trip.query.all()
 
-    dump = json.dumps(result_dict)
-    return dump
-
-@app.route("/get_trips_for_timeline", methods=['GET'])
-def get_trips_for_timeline():
-    if not session.get('logged_in'):
-        return format_response('User not logged in', True)
-
-    trips = Trip.query.all()
     result_dict = []
     for trip in trips:
         trip_dict = dict()

@@ -46,7 +46,7 @@
     {% endif %}
     >
 
-    {% block navbar %}
+   {% block navbar %}
     <div class="navbar navbar-inverse navbar-static-top">
       <div class="navbar-inner" style="height:50px;">
         <div class="container">
@@ -76,6 +76,12 @@
 
 
     {% block js_footer %}
+      <script>
+        <!-- set ajax urls here to make use of Jinja. Note that this is only javascript -->
+        {% block js_set_global_vars_w_jinja %}
+        {% endblock %}
+      </script>
+
       <!-- External libs -->
       <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAu0rrRYLQVzX9_A8HKqaUU05e3HTnwFM8&sensor=true&libraries=places" type="text/javascript"></script>
       <script src="//ajax.aspnetcdn.com/ajax/jquery.ui/1.10.1/jquery-ui.min.js" type="text/javascript"></script>

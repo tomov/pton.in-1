@@ -1,10 +1,10 @@
 // Trips data, models, ajax calls, etc
 //
-trip_id_global = -1;       // current trip to be edited; this is changed in onEdit and used in location_prompt
+trip_id_global = null;       // current trip to be edited; this is changed in onEdit and used in location_prompt
 
 function get_trips_for_map(callback) { // TODO perhaps merge with timeline one?
     $.ajax({
-        'url' : "get_trips_for_map",   // TODO FIXME Jinja
+        'url' : get_trips_url_global,
         'type' : 'GET',
         'dataType' : 'json',
         'data' : {},
@@ -17,11 +17,11 @@ function get_trips_for_map(callback) { // TODO perhaps merge with timeline one?
 
 function get_trips_for_timeline(callback) { // TODO perhaps merge with map one?
     $.ajax({
-        'url' : "get_trips_for_timeline",   // TODO FIXME Jinja
+        'url' : get_trips_url_global, 
         'type' : 'GET',
         'dataType' : 'json',
         'data' : {},
-        'success' : get_trips_for_timeline_success,
+        'success' : callback,
         'error' : function(jqXHR, textStatus, errorThrown) {
             alert('Something went wrong with the server -- couldn\'t fetch trips...');
         }
