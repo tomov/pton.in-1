@@ -128,19 +128,47 @@ def logout(group_alias = None):
     else:
         return redirect(url_for("index", group_alias=group_alias))
 
+############# group stuff ###########################
+
 @app.route("/leave_group/<group_id>")
 def leave_group(group_id):
     if not session.get('logged_in'):
-        return format_response('User not logged in', True)
+        return format_response('user not logged in', true)
     user = get_current_user()
     group = Group.query.filter_by(id=group_id).first()
     if not group:
         return format_response('No trip with given id', True)
     user.groups.remove(group)
     db.session.commit()
+    next_url = request.args.get('next_url')
+    if next_url:
+        return redirect(next_url)
     return redirect(url_for("index"))
 
-############# group stuff ###########################
+@app.route("/join_group/<group_id>")
+def join_group(group_id):
+    if not session.get('logged_in'):
+        return format_response('user not logged in', true)
+    user = get_current_user()
+    group = Group.query.filter_by(id=group_id).first()
+    if not group:
+        return format_response('No trip with given id', True)
+    user.groups.append(group)
+    db.session.commit()
+    next_url = request.args.get('next_url')
+    if next_url:
+        return redirect(next_url)
+    return redirect(url_for("index"))
+
+
+
+@app.route('/my_groups')
+def my_groups():
+    if not session.get('logged_in'):
+        return format_response('user not logged in', true)
+    user = get_current_user()
+    groups = Group.query.order_by(Group.name).all()
+    return render_template('my_groups.html', user=user, groups=groups)
 
 
 #----------------------------------------

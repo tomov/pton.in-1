@@ -732,7 +732,8 @@ class Group(db.Model):
     modified = db.Column(db.DateTime)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     name = db.Column(db.String(length = 100));
-    aliases = db.relationship('Alias', backref = 'group')
+    aliases = db.relationship('Alias', backref='group', 
+        lazy='dynamic') # lazy=dynamic allows us to treat it like a query, e.g. group.aliases.first().name
 
     def __init__(self, name=None, user_id=None):
         self.name = name

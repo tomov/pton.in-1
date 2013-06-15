@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+<!-- to reposition blocks, visit base.html -->
+
+{% block navbar_content %}
+    <span class="brand" href="/">
+        <strong>My Groups</strong>
+    </span>
+{% endblock %}
+
+{% block content %}
+  <div class="groups_content">
+      <h4>Join a group by clicking it or the "Join" button next to it. You can always leave it by clicking "Leave" or from the group page.</h4>
+      <br />
+      {% for group in groups %}
+         <p>
+           <strong><a href="{{ url_for('index', group_alias=group.aliases.first().name) }}">{{ group.name }}</a></strong>
+           &nbsp;&nbsp;&nbsp;&nbsp;
+           {% if group in user.groups %}
+             <a href="{{ url_for('leave_group', group_id=group.id) }}?next_url={{ url_for('my_groups') }}" style='color:red;'>(Leave)</a>
+           {% else %}
+             <a href="{{ url_for('join_group', group_id=group.id) }}?next_url={{ url_for('my_groups') }}" style='color:blue;'>(Join)</a>
+           {% endif %}
+         </p>
+      {% endfor %}
+
+  </div>
+{% endblock %}

@@ -34,6 +34,11 @@
     margin-bottom: 10px;
 }
 
+.groups_content {
+    margin-left: 40px;
+    padding-bottom: 50px;
+}
+
 .populate form {
     margin-bottom: 0px;
 }
