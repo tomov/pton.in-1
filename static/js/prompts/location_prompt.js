@@ -35,6 +35,24 @@ function clearTripBox() {
     $('#location_long').val('');
 }
 
+function populateFormFromDataTable(data, row) { // data is either dataTable or dataView, row is the row index
+    var location_name = data.getValue(row, 9);
+    var start_date = data.getValue(row, 12);
+    var end_date = data.getValue(row, 13);
+    var doing_what = data.getValue(row, 5);
+    var comment = data.getValue(row, 6);
+    var location_lat = data.getValue(row, 10);
+    var location_long = data.getValue(row, 11);
+    trip_id_global = data.getValue(row, 15); // this is crucial for the form to work
+    $('#location_name').val(location_name);
+    $('#doing_what').val(doing_what);
+    $('#start_date').val(start_date);
+    $('#end_date').val(end_date);
+    $('#comment').val(comment);
+    $('#location_lat').val(location_lat);
+    $('#location_long').val(location_long);
+}
+
 function getFormData() {
     var form_data = {
         'csrf_token': $('#csrf_token').val(),

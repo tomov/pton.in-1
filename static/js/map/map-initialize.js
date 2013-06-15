@@ -41,6 +41,10 @@ function get_trips_for_map_success(data, textStatus, jqXHR) {
         markers_global.push(marker); // for zoomin/zoom out changes
 
         // add info bubble to marker
+        edit_link = "<br /><a href='#' onclick='populateFormFromDataTable(dataTable_global, " + i.toString() + "); showEditTripPrompt();'>Edit Trip</a>"; // note that we expect the order in dataTable_global to be the same as the order in which we traverse the trips here; a bit too coupled maybe TODO maybe use alternative storage for all trips
+        get_in_touch_link = "<a href='mailto:" + trip['user_email'] 
+            + "?subject=[pton.in] Hey, regarding your trip to " + trip['location_name'] 
+            + " on " + trip['start_date_short'] + "' target='_blank'>Get in touch</a>"
         marker_idx++;
         info_text[marker_idx] = trip['user_name'] + "<br /><br />I'll be in " + trip['location_name'] 
                      + " from " + trip['start_date_short'] + " to " + trip['end_date_short'] + "."
@@ -48,7 +52,7 @@ function get_trips_for_map_success(data, textStatus, jqXHR) {
                      + (trip['looking_for_roomies'] ? "Looking for roommates.<br />" : "")
                      + (trip['looking_for_housing'] ? "Looking for housing.<br />" : "")
                      + trip['comment'] + "<br />"
-                     + "<a href='mailto:" + trip['user_email'] + "?subject=[pton.in] Hey, regarding your trip to " + trip['location_name'] + " on " + trip['start_date_short'] + "' target='_blank'>Get in touch</a>";
+                     + (trip['is_mine'] ? edit_link : get_in_touch_link) 
 
         google.maps.event.addListener(marker, 'click', (function(event, index) { 
             return function() {

@@ -14,20 +14,36 @@
 
 {% block navbar_right %}
     <ul class="nav pull-right">
-      <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                  {{ session.user_first_name }} {{ session.user_last_name}}
-                  <b class="caret"></b>
-                </a>
-        <ul class="dropdown-menu">
-          <li><a href='mailto:mtomov@princeton.edu?subject=My two cents about Pton.in' 
-               target='_blank'>Send Feedback!</a></li>
-          {% if group %}
-              <li><a href="{{ url_for('leave_group', group_id=group.id) }}">Leave {{ group.name }}</li>
-          {% endif %}
-          <li><a href="{{ url_for('logout', group_alias=group_alias) }}">Log Out</a></li>
-        </ul>
-      </li>
+      {% if group %}
+        <div style='float:left;'><li class="dropdown">
+            <li class="dropdown">
+                      <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        {{ group.name }}
+                        <b class="caret"></b>
+                      </a>
+              <ul class="dropdown-menu">
+                <li><a href='{{ url_for('index') }}'>Home</a></li>
+                <li><a href="{{ url_for('leave_group', group_id=group.id) }}">Leave {{ group.name }}</li>
+              </ul>
+            </li>
+        </div>
+      {% endif %}
+      
+      <div style='float:right; padding-left: 30px;'>
+          <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                      {{ session.user_first_name }} {{ session.user_last_name}}
+                      <b class="caret"></b>
+                    </a>
+            <ul class="dropdown-menu">
+              <li><a href='mailto:mtomov@princeton.edu?subject=My two cents about Pton.in' 
+                   target='_blank'>Send Feedback!</a></li>
+              <li><a href='{{ url_for('index') }}'>Home</a></li>
+              <li><a href='{{ url_for('index', group_alias='me') }}'>My Trips</a></li>
+              <li><a href="{{ url_for('logout', group_alias=group_alias) }}">Log Out</a></li>
+            </ul>
+          </li>
+      </div>
     </ul>
 {% endblock %}
 

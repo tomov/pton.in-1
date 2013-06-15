@@ -1,5 +1,6 @@
 // Trips data, models, ajax calls, etc
 //
+dataTable_global = null;     // although this table is populated in timeline_initialize and it is mainly used to store the timeline data, we are essentially using it as a list of all trips at other places too... e.g. it's used in map_initialize. So it makes more sense to put it here although we should probably think of using an alternative structure since this is mostly associated with the timeline
 trip_id_global = null;       // current trip to be edited; this is changed in onEdit and used in location_prompt
 
 function get_trips_for_map(callback) { // TODO perhaps merge with timeline one?

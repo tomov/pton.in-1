@@ -1,5 +1,4 @@
-var dataTable_global; // for now, in timeline_controller, basically all functions rely on these being global
-var dataView_global;
+dataView_global = null;
 //var timeline_global;   // seems like this HAS to be called this way... renaming it starts throwing errors in timeline-lib.js which is their lib, it seems to rely on the timeline being stored in a global variable called timeline... must investigate sometime
 // more mysteries... errors persist if I define var timeline; here ... weird stuff
 

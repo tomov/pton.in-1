@@ -71,6 +71,11 @@ def get_current_user():
     return None
 
 def get_group(group_alias):
+    if not group_alias:
+        return None
+    group_alias = group_alias.lower()
+    if group_alias == 'me': # TODO hack... oh well.. also see get_trips
+        return None
     alias = Alias.query.filter_by(name=group_alias).first()
     if alias:
         assert alias.group
@@ -213,7 +218,11 @@ def get_trips(group_alias = None):
     if group:
         trips = Trip.query.filter(Trip.user.has(User.groups.any(Group.id==group.id)))
     else:
-        trips = Trip.query.all()
+        if group_alias == 'me':
+            # the "me" page -- this is kind of hacky... maybe find a better way? also see get_group
+            trips = Trip.query.filter_by(user_id=session.get('user_id'))
+        else:
+            trips = Trip.query.all()
 
     result_dict = []
     for trip in trips:
