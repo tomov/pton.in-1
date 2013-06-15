@@ -1,15 +1,5 @@
-function get_trips_for_map() { // TODO perhaps merge with timeline one?
-    $.ajax({
-        'url' : "get_trips_for_map",   // TODO FIXME Jinja
-        'type' : 'GET',
-        'dataType' : 'json',
-        'data' : {},
-        'success' : get_trips_for_map_success,
-        'error' : function(jqXHR, textStatus, errorThrown) {
-            alert('Something went wrong with the server -- couldn\'t fetch trips for map...');
-        } 
-    });
-}
+// stuff related to initializing the map
+//
 
 function get_trips_for_map_success(data, textStatus, jqXHR) {
     var trips = data;
@@ -88,7 +78,7 @@ function initialize_map() {
     initialize_autocomplete(map);
 
     map_global = map;
-    get_trips_for_map(); // fetch all trips from db using ajax
+    get_trips_for_map(get_trips_for_map_success); // fetch all trips from db using ajax
 
     // upadte trips in timeline with those visible on map
     google.maps.event.addListener(map, 'bounds_changed', function() {

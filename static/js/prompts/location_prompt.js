@@ -75,42 +75,16 @@ $(function() {
 
     $('#add-trip-button').click(function() {
         var form_data = getFormData();
-        $.ajax({
-            'url' : 'add_trip',   // TODO {{ url_for... }} but can't really
-            'type' : 'POST',
-            'dataType' : 'json',
-            'data' : form_data,
-            'success' : addTripSuccess,
-            'error' : function(jqXHR, textStatus, errorThrown) {
-                alert('Something went wrong with the server -- couldn\'t add trip...');
-            }
-        });
+        add_trip(form_data, addTripSuccess);
     });
 
     $('#edit-trip-button').click(function() {
         var form_data = getFormData();
-        $.ajax({
-            'url' : 'edit_trip/' + trip_id_global,   // TODO {{ url_for... }} but can't really
-            'type' : 'POST',
-            'dataType' : 'json',
-            'data' : form_data,
-            'success' : editTripSuccess,
-            'error' : function(jqXHR, textStatus, errorThrown) {
-                alert('Something went wrong with the server -- couldn\'t edit trip...');
-            }
-        });
+        edit_trip(trip_id_global, form_data, editTripSuccess)
     });
 
     $('#delete-trip-button').click(function() {
-        $.ajax({
-            'url' : 'delete_trip/' + trip_id_global,  // TODO {{ url_for(...
-            'type' : 'GET',
-            'dataType' : 'json',
-            'success' : deleteTripSuccess,
-            'error' : function(jqXHR, textStatus, errorThrown) {
-                alert('Something went wrong with the server -- couldn\'t delete the trip...');
-            }
-        });        
+        delete_trip(trip_id_global, deleteTripSuccess);
     });
  
   }

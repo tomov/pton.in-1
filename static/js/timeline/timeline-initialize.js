@@ -3,19 +3,6 @@ var dataView_global;
 //var timeline_global;   // seems like this HAS to be called this way... renaming it starts throwing errors in timeline-lib.js which is their lib, it seems to rely on the timeline being stored in a global variable called timeline... must investigate sometime
 // more mysteries... errors persist if I define var timeline; here ... weird stuff
 
-function get_trips_for_timeline() { // TODO perhaps merge with map one?
-    $.ajax({
-        'url' : "get_trips_for_timeline",   // TODO FIXME Jinja
-        'type' : 'GET',
-        'dataType' : 'json',
-        'data' : {},
-        'success' : get_trips_for_timeline_success,
-        'error' : function(jqXHR, textStatus, errorThrown) {
-            alert('Something went wrong with the server -- couldn\'t fetch trips...');
-        }
-    });
-}
-
 function get_trips_for_timeline_success(data, textStatus, jqXHR) {
     var trips = data;
 
@@ -135,7 +122,7 @@ function initialize_timeline() {
     var dataView = new google.visualization.DataView(dataTable);
     dataView_global = dataView;
 
-    get_trips_for_timeline();
+    get_trips_for_timeline(get_trips_for_timeline_success);
 
     $('#show-more').click(function() {
       $('#show-more').addClass('hidden');

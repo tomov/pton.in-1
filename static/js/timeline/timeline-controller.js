@@ -1,7 +1,6 @@
 TIMELINE_ROW_HEIGHT = 46.5; // TODO find more legit way to figure it out...
 TIMELINE_PEOPLE_LIMIT = 10;         // how many trips to show by default -- this is to speed up zooming / loading
 show_all_trips_in_timeline_global = false;
-trip_id_global = -1;       // current trip to be edited; this is changed in onEdit and used in location_prompt
 
 // when we zoom the map, the timeline shows only the trips that are visible on the map
 function onZoom(bounds) {
@@ -86,22 +85,7 @@ function onChange() {
     end_date = print_date(new Date(end_datetime * 1000));
     dataTable_global.setValue(row, 12, start_date);
     dataTable_global.setValue(row, 13, end_date);
-    $.ajax({
-        'url' : 'change_dates/' + trip_id, // TODO {{ url_for(...
-        'type' : 'GET',
-        'dataType' : 'json',
-        'data' : {
-            'start_date': start_datetime,
-            'end_date': end_datetime
-        },
-        'success' : function(data, textStatus, jqXHR) {
-            // alert('Trip changed successfully!');
-        },
-        'error' : function(jqXHR, textStatus, errorThrown) {
-            alert('Something went wrong with the server -- couldn\'t update the trip...');
-        }
-    });
- 
+    change_dates(trip_id, start_datetime, end_datetime);
 }
 
 function onDelete() {
@@ -109,17 +93,7 @@ function onDelete() {
     var row = getSelectedRow();
     if (row == undefined) return;
     var trip_id = data.getValue(row, 15);
-    $.ajax({
-        'url' : 'delete_trip/' + trip_id,  // TODO {{ url_for(...
-        'type' : 'GET',
-        'dataType' : 'json',
-        'success' : function(data, textStatus, jqXHR) {
-            // alert('Trip deleted successfully!');
-        },
-        'error' : function(jqXHR, textStatus, errorThrown) {
-            alert('Something went wrong with the server -- couldn\'t delete the trip...');
-        }
-    });
+    delete_trip(trip_id, null);
 }
 
 function onSelect() {
