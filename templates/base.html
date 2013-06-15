@@ -46,7 +46,7 @@
     {% endif %}
     >
 
-   {% block navbar %}
+    {% block navbar %}
     <div class="navbar navbar-inverse navbar-static-top">
       <div class="navbar-inner" style="height:50px;">
         <div class="container">
@@ -63,6 +63,7 @@
 
             <div>
             {% block navbar_right %}
+              {% if session.logged_in %}
                 <ul class="nav pull-right">
                   {% if group %}
                     <div style='float:left;'><li class="dropdown">
@@ -96,6 +97,7 @@
                       </li>
                   </div>
                 </ul>
+              {% endif %}
             {% endblock %}
             </div>
 
