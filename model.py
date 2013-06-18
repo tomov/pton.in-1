@@ -649,6 +649,7 @@ class User(db.Model):
     class_year = db.Column(db.Integer)
     major = db.Column(db.String(length = 50))
     trips = db.relationship('Trip', backref = 'user')
+    events = db.relationship('Event', backref = 'user')
     groups_owned = db.relationship('Group', backref = 'user')
     groups = db.relationship('Group', secondary = users_groups_table, backref = 'users')
 
@@ -731,9 +732,10 @@ class Group(db.Model):
     created = db.Column(db.DateTime)
     modified = db.Column(db.DateTime)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    name = db.Column(db.String(length = 100));
+    name = db.Column(db.String(length = 100))
     aliases = db.relationship('Alias', backref='group', 
         lazy='dynamic') # lazy=dynamic allows us to treat it like a query, e.g. group.aliases.first().name
+    events = db.relationship('Event', backref='group')
 
     def __init__(self, name=None, user_id=None):
         self.name = name
@@ -791,6 +793,41 @@ class Trip(db.Model):
 
     def __repr__(self):
         return '<Trip %r>' % (self.location_name)
+
+
+class Event(db.Model):
+    __tablename__ = 'events'
+    id = db.Column(db.Integer, primary_key = True)
+    created = db.Column(db.DateTime)
+    modified = db.Column(db.DateTime)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    group_id = db.Column(db.Integer, db.ForeignKey('groups.id'))
+    title = db.Column(db.String(length = 100))
+    description = db.Column(db.String(length = 1000))
+    url = db.Column(db.String(length = 1000))
+    start_date = db.Column(db.DateTime)
+    end_date = db.Column(db.DateTime)
+    location_name = db.Column(db.String(length = 100))
+    location_lat = db.Column(db.Float(precision = 32))
+    location_long = db.Column(db.Float(precision = 32))
+
+    def __init__(self, user_id, group_id = None, title = None, description = None, url = None, start_date = None, end_date = None, location_name = None, location_lat = None, location_long = None):
+        self.user_id = user_id
+        self.group_id = group_id
+        self.title = title
+        self.description = description
+        self.url = url
+        self.start_date = start_date
+        self.end_date = end_date
+        self.location_name = location_name
+        self.location_lat = location_lat
+        self.location_long = location_long
+        self.created = datetime.utcnow()
+        self.modified = self.created
+
+    def __repr__(self):
+        return '<Trip %r>' % (self.title)
+
 
 # call this somewhere in application.py/home, run and open home page
 # then check if db is created and then remove it

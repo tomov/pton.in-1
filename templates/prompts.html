@@ -1,22 +1,22 @@
-<div id="location_prompt"  style="position:absolute;width:100%;" {% if not show_prompt %}hidden{% endif %}>
+<div id="trip_prompt"  style="position:absolute;width:100%;" {% if not show_prompt %}hidden{% endif %}>
   <div class="populate">
 
   <center>
   <h1>Where will you be this summer?</h1>
   <h3 class="sub">Tell your friends and find out where they'll be!</h3>
-    {{ form.csrf_token }}
-    {{ form.location_name(placeholder='City (please select)') }}<br />
-    {{ form.doing_what(placeholder='Doing What?') }}<br />
-    {{ form.location_lat }}
-    {{ form.location_long }}
-    {{ form.start_date(placeholder='Start Date')  }}
-    {{ form.end_date(placeholder='End Date')  }}<br />
+    {{ trip_form.csrf_token }}
+    {{ trip_form.location_name(placeholder='City (please select)') }}<br />
+    {{ trip_form.doing_what(placeholder='Doing What?') }}<br />
+    {{ trip_form.location_lat }}
+    {{ trip_form.location_long }}
+    {{ trip_form.start_date(placeholder='Start Date')  }}
+    {{ trip_form.end_date(placeholder='End Date')  }}<br />
     <p>
-      {{ form.looking_for_roomies }} Looking for Roommates &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+      {{ trip_form.looking_for_roomies }} Looking for Roommates &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
 &nbsp; &nbsp; &nbsp; &nbsp;
-      {{ form.looking_for_housing }} Looking for Housing &nbsp; &nbsp; &nbsp; &nbsp;
+      {{ trip_form.looking_for_housing }} Looking for Housing &nbsp; &nbsp; &nbsp; &nbsp;
     </p>
-    {{ form.comment(placeholder='Additional Comments') }}<br>
+    {{ trip_form.comment(placeholder='Additional Comments') }}<br>
     <div>
       <input class="btn" id='add-trip-button' type="submit" value="Add Trip">
       <div id="edit-trip-panel" hidden>
@@ -24,7 +24,38 @@
         <p><input id="delete-trip-button" class="delete" type="submit" style="color: white; background-color: red;" value="Delete Trip"></p>
       </div>
 
-      <a id="hide-link" href="#">hide</a>
+      <a id="hide-trip-link" class="hide-link" href="#">hide</a>
+    </div>
+  </center>
+
+  </div>
+</div>
+
+
+<div id="event_prompt"  style="position:absolute;width:100%;" hidden>
+  <div class="populate">
+
+  <center>
+  <h1>What are you up to? Find people to go with!</h1>
+  <h3 class="sub">Your friends will see this event on the map and in their feed.</h3>
+    {{ event_form.csrf_token }}
+    {{ event_form.group_id }}
+    {{ event_form.title(placeholder='Title') }}<br />
+    {{ event_form.description(placeholder='Description') }}<br />
+    {{ event_form.url(placeholder='URL (if any)') }}<br />
+    {{ event_form.location_name(placeholder='City (please select)') }}<br />
+    {{ event_form.location_lat }}
+    {{ event_form.location_long }}
+    {{ event_form.start_date(placeholder='Start Date')  }}
+    {{ event_form.end_date(placeholder='End Date')  }}<br />
+    <div>
+      <input class="btn" id='add-event-button' type="submit" value="Add Event">
+      <div id="edit-event-panel" hidden>
+        <p><input class="btn" id='edit-event-button' type="submit" value="Edit Event"></p>
+        <p><input id="delete-event-button" class="delete" type="submit" style="color: white; background-color: red;" value="Delete Event"></p>
+      </div>
+
+      <a id="hide-event-link" class="hide-link" href="#">hide</a>
     </div>
   </center>
 

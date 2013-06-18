@@ -1,6 +1,6 @@
 function showTripPrompt() {
-    $('#location_prompt').show();
-    $('#show-link').hide();
+    $('#trip_prompt').show();
+    $('#show-trip-link').hide();
     $("html, body").animate({ scrollTop: 0 }, "fast");
 }
 
@@ -18,9 +18,9 @@ function showEditTripPrompt() {
 }
 
 function hideTripPrompt() {
-    $('#location_prompt').hide();
-    if (document.getElementById('show-link')) {
-        $('#show-link').show();
+    $('#trip_prompt').hide();
+    if (document.getElementById('show-trip-link')) {
+        $('#show-trip-link').show();
     }
 }
 
@@ -53,7 +53,7 @@ function populateFormFromDataTable(data, row) { // data is either dataTable or d
     $('#location_long').val(location_long);
 }
 
-function getFormData() {
+function getTripFormData() {
     var form_data = {
         'csrf_token': $('#csrf_token').val(),
         'location_name': $('#location_name').val(),
@@ -74,7 +74,7 @@ function getFormData() {
 }
 
 $(function() {
-  if (document.getElementById('location_prompt')) {
+  if (document.getElementById('trip_prompt')) {
     var input = document.getElementById('location_name');
     var prompt_autocomplete = new google.maps.places.Autocomplete(input);
     google.maps.event.addListener(prompt_autocomplete, 'place_changed', function() {
@@ -83,21 +83,21 @@ $(function() {
         $('#location_long').val(place.geometry.location.lng());
     });
 
-    $('#hide-link').click(hideTripPrompt);
+    $('#hide-trip-link').click(hideTripPrompt);
 
-    if (document.getElementById('show-link')) {
-      $('#show-link').click(function() {
+    if (document.getElementById('show-trip-link')) {
+      $('#show-trip-link').click(function() {
           onNew();
       });
     }
 
     $('#add-trip-button').click(function() {
-        var form_data = getFormData();
+        var form_data = getTripFormData();
         add_trip(form_data, addTripSuccess);
     });
 
     $('#edit-trip-button').click(function() {
-        var form_data = getFormData();
+        var form_data = getTripFormData();
         edit_trip(trip_id_global, form_data, editTripSuccess)
     });
 

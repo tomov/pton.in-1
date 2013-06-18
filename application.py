@@ -6,10 +6,10 @@ import pprint
 from datetime import datetime
 from wtforms.ext.sqlalchemy.orm import model_form
 
-from forms import NewTripForm 
+from forms import NewTripForm, NewEventForm
 import model
 from model import db
-from model import User, Trip, Group, Alias
+from model import User, Trip, Group, Alias, Event
 from model import create_db
 from constants import *
 from util import *
@@ -95,9 +95,11 @@ def index(group_alias = None):
         return render_template('welcome.html', group_alias=group_alias)
     else:
         user = get_current_user()
-        # generate form
+        # generate forms
         trip = Trip(user.id)
-        form = NewTripForm(obj=trip, secret_key=os.environ[SECRET_KEY])
+        trip_form = NewTripForm(obj=trip, secret_key=os.environ[SECRET_KEY])
+        event = Event(user.id)
+        event_form = NewEventForm(obj=event, secret_key=os.environ[SECRET_KEY])
         # see if we need to ask user to add trip
         trip_count = Trip.query.filter_by(user_id=user.id).count()
         show_prompt = (trip_count == 0)
@@ -106,7 +108,7 @@ def index(group_alias = None):
         if group and group not in user.groups:
             user.groups.append(group)
             db.session.commit()
-        return render_template('main.html', group_alias=group_alias, group=group, form=form, show_prompt=show_prompt)
+        return render_template('main.html', group_alias=group_alias, group=group, trip_form=trip_form, event_form=event_form, show_prompt=show_prompt)
 
 @app.route("/<group_alias>/login")
 @app.route("/login")
@@ -236,6 +238,8 @@ def format_response(msg=None, error=False):
 # api 
 #----------------------------------------
 
+######################### trips ###########################
+
 @app.route("/<group_alias>/get_trips", methods=['GET'])
 @app.route("/get_trips", methods=['GET'])
 def get_trips(group_alias = None):
@@ -295,7 +299,6 @@ def add_trip():
 
     return format_response('Could not add trip for some reason...', True) 
 
-# TODO
 @app.route("/edit_trip/<trip_id>", methods=['POST'])
 def edit_trip(trip_id):
     if not session.get('logged_in'):
@@ -358,6 +361,54 @@ def change_latlong(trip_id):
     location_long = request.args.get('location_long')
     trip.location_lat = location_lat
     trip.location_long = location_long
+    db.session.commit()
+    return format_response('SUCCESS!')
+
+###################### events ###################################
+
+@app.route("/add_event", methods=['POST'])
+def add_event():
+    if not session.get('logged_in'):
+        return format_response('User not logged in', True)
+
+    event = Event(session.get('user_id'))
+    form = NewEventForm(obj=event, secret_key=os.environ[SECRET_KEY])
+    if form.validate_on_submit():
+        form.populate_obj(event)
+        db.session.add(event)
+        db.session.commit()
+        return format_response('SUCCESS!');
+
+    return format_response('Could not add event for some reason...', True) 
+
+@app.route("/edit_event/<event_id>", methods=['POST'])
+def edit_event(event_id):
+    if not session.get('logged_in'):
+        return format_response('User not logged in', True)
+    event = Event.query.filter_by(id=event_id).first()
+    if not event:
+        return format_response('No event with given id', True)
+    if event.user.id != session.get('user_id'):
+        return format_response('Event does not belong to logged in user', True)
+
+    form = NewEventForm(obj=event, secret_key=os.environ[SECRET_KEY])
+    if form.validate_on_submit():
+        form.populate_obj(event)
+        db.session.commit()
+        return format_response('SUCCESS!');
+    return format_response('Could not edit event for some reason...', True)
+
+@app.route("/delete_event/<event_id>", methods = ['GET'])
+def delete_event(event_id):
+    if not session.get('logged_in'):
+        return format_response('User not logged in', True)
+    event = Event.query.filter_by(id=event_id).first()
+    if not event:
+        return format_response('No event with given id', True)
+    if event.user.id != session.get('user_id'):
+        return format_response('Event does not belong to logged in user', True)
+
+    db.session.delete(event)
     db.session.commit()
     return format_response('SUCCESS!')
 
