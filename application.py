@@ -95,19 +95,22 @@ def index(group_alias = None):
         return render_template('welcome.html', group_alias=group_alias)
     else:
         user = get_current_user()
-        # generate forms
-        trip = Trip(user.id)
-        trip_form = NewTripForm(obj=trip, secret_key=os.environ[SECRET_KEY])
-        event = Event(user.id)
-        event_form = NewEventForm(obj=event, secret_key=os.environ[SECRET_KEY])
-        # see if we need to ask user to add trip
-        trip_count = Trip.query.filter_by(user_id=user.id).count()
-        show_prompt = (trip_count == 0)
         # figure out group stuff
         group = get_group(group_alias)
         if group and group not in user.groups:
             user.groups.append(group)
             db.session.commit()
+        # generate forms
+        trip = Trip(user.id)
+        trip_form = NewTripForm(obj=trip, secret_key=os.environ[SECRET_KEY])
+        if group:
+            event = Event(user.id, group.id)
+        else:
+            event = Event(user.id)
+        event_form = NewEventForm(obj=event, secret_key=os.environ[SECRET_KEY])
+        # see if we need to ask user to add trip
+        trip_count = Trip.query.filter_by(user_id=user.id).count()
+        show_prompt = (trip_count == 0)
         return render_template('main.html', group_alias=group_alias, group=group, trip_form=trip_form, event_form=event_form, show_prompt=show_prompt)
 
 @app.route("/<group_alias>/login")
@@ -365,6 +368,51 @@ def change_latlong(trip_id):
     return format_response('SUCCESS!')
 
 ###################### events ###################################
+
+@app.route("/<group_alias>/get_events", methods=['GET'])
+@app.route("/get_events", methods=['GET'])
+def get_events(group_alias = None):
+    if not session.get('logged_in'):
+        return format_response('User not logged in', True)
+
+    group = get_group(group_alias)
+    if group:
+        events = Event.query.filter_by(group_id=group.id)
+    else:
+        if group_alias == 'me':
+            # the "me" page -- this is kind of hacky... maybe find a better way? also see get_group
+            events = Event.query.filter_by(user_id=session.get('user_id'))
+        else:
+            events = Event.query.all()
+
+    result_dict = []
+    for event in events:
+        event_dict = dict()
+        event_dict['id'] = event.id
+        event_dict['title'] = event.title
+        event_dict['description'] = event.description
+        event_dict['url'] = event.url
+        event_dict['location_lat'] = event.location_lat
+        event_dict['location_long'] = event.location_long
+        event_dict['location_name'] = event.location_name
+        event_dict['start_date_short'] = event.start_date.strftime('%b %d')
+        event_dict['end_date_short'] = event.end_date.strftime('%b %d')
+        event_dict['start_date'] = event.start_date.strftime('%Y-%m-%d')
+        event_dict['end_date'] = event.end_date.strftime('%Y-%m-%d')
+        event_dict['user_name'] = event.user.first_name + ' ' + event.user.last_name
+        event_dict['user_first_name'] = event.user.first_name
+        event_dict['user_last_name'] = event.user.last_name
+        event_dict['user_email'] = event.user.email
+        event_dict['user_fbid'] = event.user.fbid
+        event_dict['group_id'] = event.group_id
+        event_dict['is_mine'] = (event.user.id == session.get('user_id', None))
+        event_dict['start_date_form'] = event.start_date.strftime('%m/%d/%Y')
+        event_dict['end_date_form'] = event.end_date.strftime('%m/%d/%Y')
+        result_dict.append(event_dict)
+
+    dump = json.dumps(result_dict)
+    return dump
+
 
 @app.route("/add_event", methods=['POST'])
 def add_event():

@@ -2,22 +2,20 @@
 //
 event_id_global = null;       // current trip to be edited; this is changed in onEdit and used in trip_prompt 
 
-// TODO implement
-/*
 function get_events_for_map(callback) { // TODO perhaps merge with timeline one?
     $.ajax({
-        'url' : get_trips_url_global,
+        'url' : get_events_url_global,
         'type' : 'GET',
         'dataType' : 'json',
         'data' : {},
         'success' : callback,
         'error' : function(jqXHR, textStatus, errorThrown) {
-            alert('Something went wrong with the server -- couldn\'t fetch trips for map...');
+            alert('Something went wrong with the server -- couldn\'t fetch events for map...');
         } 
     });
 }
-*/
 
+// TODO implement
 /*
 function get_events_for_timeline(callback) { // TODO perhaps merge with map one?
     $.ajax({

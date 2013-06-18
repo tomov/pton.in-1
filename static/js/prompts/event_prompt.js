@@ -27,7 +27,8 @@ function hideEventPrompt() {
 function clearEventBox() {
     // call this to change the form from Edit mode to Add mode
     // TODO conflict with clearTripBox? same field ids?
-    $('#group_id').val('');
+    // $('#group_id').val(''); -- we don't clear this; the field is used as a storage between backend and submit. The group id is passed in application.py/index and is not changed
+    // unlike the user_id, it is not stored in the session so it is more convenient to pass it that way
     $('#title').val('');
     $('#description').val('');
     $('#url').val('');
@@ -39,7 +40,7 @@ function clearEventBox() {
 }
 
 /*
-TODO hi hi... can't edit yet
+TODO hehe... can't edit yet
 
 function populateFormFromDataTable(data, row) { // data is either dataTable or dataView, row is the row index... TODO a bit of coupling with dataTable_global and its internal structure
     var location_name = data.getValue(row, 9);

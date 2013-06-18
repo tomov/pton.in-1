@@ -82,6 +82,12 @@ function get_trips_for_map_success(data, textStatus, jqXHR) {
     var mc = new MarkerClusterer(map, markers_global, mcOptions); 
 }
 
+function get_events_for_map_success(data, textStatus, jqXHR) {
+    var events = data;
+    alert(' got events successfully!!! ');
+    console.log(events);
+}
+
 function initialize_map() {
     // init map
     var center = new google.maps.LatLng(20,0);
@@ -97,6 +103,7 @@ function initialize_map() {
 
     map_global = map;
     get_trips_for_map(get_trips_for_map_success); // fetch all trips from db using ajax
+    get_events_for_map(get_events_for_map_success);
 
     // upadte trips in timeline with those visible on map
     google.maps.event.addListener(map, 'bounds_changed', function() {
