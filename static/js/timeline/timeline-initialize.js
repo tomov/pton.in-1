@@ -1,9 +1,54 @@
-dataView_global = null;
-//var timeline_global;   // seems like this HAS to be called this way... renaming it starts throwing errors in timeline-lib.js which is their lib, it seems to rely on the timeline being stored in a global variable called timeline... must investigate sometime
-// more mysteries... errors persist if I define var timeline; here ... weird stuff
+// initialize the timeline 
+// 
+// Global variables:
+// 
+// timeline                    // the timeline object storing the rendered timeline (CHAP Links library)
+// dataTable_global            // the google visualization data table that stores all trip data under the "hood" of the timeline
+// dataView_global             // the google visualization data view that filters which trips are shown on the timeline
 
-function get_trips_for_timeline_success(data, textStatus, jqXHR) {
-    var trips = data;
+function initialize_timeline() {
+    var dataTable = new google.visualization.DataTable();
+    dataTable_global = dataTable;
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // Note: order here MATTERS a lot -- see static/js/timeline/timeline-controller.js, data.getValue(row, ...)
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    dataTable.addColumn('datetime', 'start');
+    dataTable.addColumn('datetime', 'end');
+    dataTable.addColumn('string', 'content');
+    dataTable.addColumn('string', 'group');
+    dataTable.addColumn('string', 'className');
+    dataTable.addColumn('string', 'doing_what');
+    dataTable.addColumn('string', 'comment');
+    dataTable.addColumn('string', 'link');
+    dataTable.addColumn('boolean', 'is_mine');
+    dataTable.addColumn('string', 'location');
+    dataTable.addColumn('string', 'location_lat');
+    dataTable.addColumn('string', 'location_long');
+    dataTable.addColumn('string', 'start_date');
+    dataTable.addColumn('string', 'end_date');
+    dataTable.addColumn('boolean', 'editable');
+    dataTable.addColumn('string', 'trip_id');
+
+    var dataView = new google.visualization.DataView(dataTable);
+    dataView_global = dataView;
+
+    $('#show-more').click(function() {
+      $('#show-more').addClass('hidden');
+      $('#show-less').removeClass('hidden');
+      show_all_trips_in_timeline_global = true;
+      onZoomTimelineUpdate(map_global.getBounds()); // updates timeline height too, but we need to load the extra rows that were hidden
+    });
+
+    $('#show-less').click(function() {
+      $('#show-less').addClass('hidden');
+      $('#show-more').removeClass('hidden');
+      show_all_trips_in_timeline_global = false;
+      updateTimelineHeight();
+    });
+}
+
+
+function populate_timeline_with_trips(trips) {
 
     for (var i = 0; i < trips.length; i++) {
         var trip = trips[i];
@@ -94,53 +139,4 @@ function get_trips_for_timeline_success(data, textStatus, jqXHR) {
     
     updateTimelineHeight(); // to compress timeline
 }
-
-function initialize_timeline() {
-    var dataTable = new google.visualization.DataTable();
-    dataTable_global = dataTable;
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // Note: order here MATTERS a lot -- see static/js/timeline/timeline-controller.js, data.getValue(row, ...)
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    dataTable.addColumn('datetime', 'start');
-    dataTable.addColumn('datetime', 'end');
-    dataTable.addColumn('string', 'content');
-    dataTable.addColumn('string', 'group');
-    dataTable.addColumn('string', 'className');
-    dataTable.addColumn('string', 'doing_what');
-    dataTable.addColumn('string', 'comment');
-    dataTable.addColumn('string', 'link');
-    dataTable.addColumn('boolean', 'is_mine');
-    dataTable.addColumn('string', 'location');
-    dataTable.addColumn('string', 'location_lat');
-    dataTable.addColumn('string', 'location_long');
-    dataTable.addColumn('string', 'start_date');
-    dataTable.addColumn('string', 'end_date');
-    dataTable.addColumn('boolean', 'editable');
-    dataTable.addColumn('string', 'trip_id');
-
-    var dataView = new google.visualization.DataView(dataTable);
-    dataView_global = dataView;
-
-    get_trips_for_timeline(get_trips_for_timeline_success);
-
-    $('#show-more').click(function() {
-      $('#show-more').addClass('hidden');
-      $('#show-less').removeClass('hidden');
-      show_all_trips_in_timeline_global = true;
-      onZoom(map_global.getBounds()); // updates timeline height too, but we need to load the extra rows that were hidden
-    });
-
-    $('#show-less').click(function() {
-      $('#show-less').addClass('hidden');
-      $('#show-more').removeClass('hidden');
-      show_all_trips_in_timeline_global = false;
-      updateTimelineHeight();
-    });
-}
-
-
-google.load("visualization", "1");
-
-// Set callback to run when API is loaded
-google.setOnLoadCallback(initialize_timeline);
 

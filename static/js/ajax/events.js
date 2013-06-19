@@ -1,9 +1,19 @@
 // Trips data, models, ajax calls, etc
 //
-event_id_global = null;       // current trip to be edited; this is changed in onEdit and used in trip_prompt 
-//events_data_global = null;    // all events fetched by backend -- stored for filtering in the feed ;; do not declare here b/c it gets populated elsewhere...
+// Global variables:
+//
+// get_events_url_global           // api endpoint ; defined in HTML to make use of url_for(...)
+// events_data_global              // all events fetched by backend -- stored for filtering in the feed ;; do not declare here b/c it gets populated elsewhere...
+// event_id_global                 // current event to be edited; this is changed in onEdit and used in event_prompt 
 
-function get_events_for_map(callback) { // TODO perhaps merge with timeline one?
+function get_events_success(data, textStatus, jqXHR) {
+    // initialize data structures that represent trips (i.e. feed) once we have fetched them
+    events_data_global = data;
+    populate_map_with_events(events_data_global);
+    populate_feed_with_events(events_data_global);
+}
+
+function get_events(callback) {
     $.ajax({
         'url' : get_events_url_global,
         'type' : 'GET',

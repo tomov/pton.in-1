@@ -1,9 +1,20 @@
 // Trips data, models, ajax calls, etc
 //
+// Global variables:
+//
+// get_trips_url_global      // api endpoint; defined in HTML to make use of {{ url_for(...) }}
 dataTable_global = null;     // although this table is populated in timeline_initialize and it is mainly used to store the timeline data, we are essentially using it as a list of all trips at other places too... e.g. it's used in map_initialize. So it makes more sense to put it here although we should probably think of using an alternative structure since this is mostly associated with the timeline
 trip_id_global = null;       // current trip to be edited; this is changed in onEdit and used in trip_prompt 
+trips_data_global = null;    // data about all trips
 
-function get_trips_for_map(callback) { // TODO perhaps merge with timeline one?
+function get_trips_success(data, textStatus, jqXHR) {
+    // initialize data structures that represent trips (map, timeline, etc) once we have fetched them
+    trips_data_global = data;
+    populate_map_with_trips(trips_data_global);
+    populate_timeline_with_trips(trips_data_global);
+}
+
+function get_trips(callback) {
     $.ajax({
         'url' : get_trips_url_global,
         'type' : 'GET',
@@ -11,21 +22,8 @@ function get_trips_for_map(callback) { // TODO perhaps merge with timeline one?
         'data' : {},
         'success' : callback,
         'error' : function(jqXHR, textStatus, errorThrown) {
-            alert('Something went wrong with the server -- couldn\'t fetch trips for map...');
-        } 
-    });
-}
-
-function get_trips_for_timeline(callback) { // TODO perhaps merge with map one?
-    $.ajax({
-        'url' : get_trips_url_global, 
-        'type' : 'GET',
-        'dataType' : 'json',
-        'data' : {},
-        'success' : callback,
-        'error' : function(jqXHR, textStatus, errorThrown) {
             alert('Something went wrong with the server -- couldn\'t fetch trips...');
-        }
+        } 
     });
 }
 

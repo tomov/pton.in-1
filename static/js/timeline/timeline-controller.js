@@ -1,11 +1,13 @@
+// Global variables:
+//
 TIMELINE_ROW_HEIGHT = 46.5; // TODO find more legit way to figure it out...
 TIMELINE_PEOPLE_LIMIT = 10;         // how many trips to show by default -- this is to speed up zooming / loading
 show_all_trips_in_timeline_global = false;
 
 // when we zoom the map, the timeline shows only the trips that are visible on the map
-function onZoom(bounds) {
-    if (typeof markers_global === 'undefined' || typeof timeline === 'undefined') {
-        // onZoom sometimes gets called before the timeline / map has loaded
+function onZoomTimelineUpdate(bounds) {
+    if (typeof trip_markers_global === 'undefined' || typeof timeline === 'undefined') {
+        // onZoomTimelineUpdate sometimes gets called before the timeline / map has loaded
         return;
     }
     // count how many people will be visible
@@ -15,8 +17,8 @@ function onZoom(bounds) {
     // create array for viewable rows
     var save_rows = [];
     // currently iterates through list... should prolly change to a 2d-tree or something evetually
-    for (var j=0;j<markers_global.length;j++) {
-        if (bounds.contains(markers_global[j].getPosition())) {
+    for (var j=0;j<trip_markers_global.length;j++) {
+        if (bounds.contains(trip_markers_global[j].getPosition())) {
             // break early if we can -- speeds things up
             // TODO might not be necessary tho... and we can probs use save_rows.length instead of people_count since we only need an overestimate... look into it
             group = dataTable_global.getValue(j, 3);
@@ -121,7 +123,7 @@ function strip(html)
 var onEdit = function (event) {
     var row = getSelectedRow();
     if (row == undefined) return;
-    populateFormFromDataTable(dataView_global, row);
+    populateTripFormFromDataTable(dataView_global, row);
     showEditTripPrompt();
 };
 

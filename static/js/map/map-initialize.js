@@ -1,13 +1,44 @@
 // stuff related to initializing the map
 //
+// Global variables:
+//
+// trip_markers_global               // markers on map for trips
+// trip_info_texts_global                    // info balloons on map for events
+// event_markers_global               // markers on map for trips
+// event_info_texts_global                    // info balloons on map for events
+// map_global                          // the google map object
 
-function get_trips_for_map_success(data, textStatus, jqXHR) {
-    var trips = data;
-    var map = map_global;
+function initialize_map() {
+    // init map
+    var center = new google.maps.LatLng(20,0);
+    var mapOptions = {
+        zoom: 2,
+        center: center,
+        scrollwheel: false,
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+    }
+    var map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
+    map_global = map;
 
     // init data points
-    info_text = new Array();
-    markers_global = new Array();
+    trip_info_texts_global = new Array();
+    trip_markers_global = new Array();
+    event_markers_global = new Array();
+    event_info_texts_global = new Array();
+
+    // other init stuffs
+    initialize_search_autocomplete(map);
+
+    // upadte trips in timeline with those visible on map
+    google.maps.event.addListener(map, 'bounds_changed', function() {
+        var bounds = map.getBounds();
+        onZoomTimelineUpdate(bounds);
+        onZoomFeedUpdate(bounds);
+    });
+}
+
+function populate_map_with_trips(trips) {
+    var map = map_global;
 
     // pretty pin icon 
     var getPinIcon = function(image) {
@@ -40,14 +71,14 @@ function get_trips_for_map_success(data, textStatus, jqXHR) {
             draggable: is_mine
         });
 
-        markers_global.push(marker); // for zoomin/zoom out changes
+        trip_markers_global.push(marker); // for zoomin/zoom out changes
 
         // add info bubble to marker
-        edit_link = "<br /><a href='#' onclick='populateFormFromDataTable(dataTable_global, " + i.toString() + "); showEditTripPrompt();'>Edit Trip</a>"; // note that we expect the order in dataTable_global to be the same as the order in which we traverse the trips here; a bit too coupled maybe TODO maybe use alternative storage for all trips
-        get_in_touch_link = "<a href='mailto:" + trip['user_email'] 
+        var edit_link = "<br /><a href='#' onclick='populateTripFormFromDataTable(dataTable_global, " + i.toString() + "); showEditTripPrompt();'>Edit Trip</a>"; // note that we expect the order in dataTable_global to be the same as the order in which we traverse the trips here; a bit too coupled maybe TODO maybe use alternative storage for all trips
+        var get_in_touch_link = "<a href='mailto:" + trip['user_email'] 
             + "?subject=[pton.in] Hey, regarding your trip to " + trip['location_name'] 
-            + " on " + trip['start_date_short'] + "' target='_blank'>Get in touch</a>"
-        info_text[i] = trip['user_name'] + "<br /><br />I'll be in " + trip['location_name'] 
+            + " on " + trip['start_date_short'] + "' target='_blank'>Get in touch</a>";
+        trip_info_texts_global[i] = trip['user_name'] + "<br /><br />I'll be in " + trip['location_name'] 
                      + " from " + trip['start_date_short'] + " to " + trip['end_date_short'] + "."
                      + " " + trip['doing_what'] + "<br />"
                      + (trip['looking_for_roomies'] ? "Looking for roommates.<br />" : "")
@@ -57,17 +88,17 @@ function get_trips_for_map_success(data, textStatus, jqXHR) {
 
         google.maps.event.addListener(marker, 'click', (function(event, index) { 
             return function() {
-                infowindow.content = info_text[index];
+                infowindow.content = trip_info_texts_global[index];
                 infowindow.open(map, this);
             }
         })(marker, i));
         
         google.maps.event.addListener(marker, 'dragend', (function(event, row) {
             return function() {
-                location_lat = marker.position.lat();
-                location_long = marker.position.lng();
+                var location_lat = marker.position.lat();
+                var location_long = marker.position.lng();
                 // again, a bit of coupling -- we use dataTable_global to retrieve the trip_id... although we could avoid this by passing it directly, we do need to change the location_lat and location_long in the table anyway, so might as well use it all the way. TODO fix when (if) we use an alternative global representation for all trips (like edit_link above)
-                trip_id = dataTable_global.getValue(row, 15);
+                var trip_id = dataTable_global.getValue(row, 15);
                 change_latlong(trip_id, location_lat, location_long); 
                 // update the date times in table for the edit prompt
                 dataTable_global.setValue(row, 10, location_lat.toString()); 
@@ -79,21 +110,16 @@ function get_trips_for_map_success(data, textStatus, jqXHR) {
 
     // markerclusterer -- this makes things pretty
     var mcOptions = {gridSize: 50, maxZoom: 10};
-    var mc = new MarkerClusterer(map, markers_global, mcOptions); 
+    var mc = new MarkerClusterer(map, trip_markers_global, mcOptions); 
 }
 
 
 
 
 
-function get_events_for_map_success(data, textStatus, jqXHR) {
-    var events = data;
+function populate_map_with_events(events) {
     events_data_global = events; // store events globally
     var map = map_global;
-
-    // init data points
-    events_info_text = new Array();
-    event_markers_global = new Array();
 
     // pretty pin icon 
     var getPinIcon = function(image) {
@@ -109,7 +135,7 @@ function get_events_for_map_success(data, textStatus, jqXHR) {
     for (var i = 0; i < events.length; i++)
     {
         // create pin on map
-        var event_obj = events[i]
+        var event_obj = events[i];
         // each pt has latlng + image (that's it)
         var noiseScale = 0.1; // pulled out of Momchil's ass
         var noiseLat = (Math.random() - 0.5) * noiseScale;
@@ -127,31 +153,35 @@ function get_events_for_map_success(data, textStatus, jqXHR) {
 
         event_markers_global.push(marker); // for zoomin/zoom out changes
 
-        /*
+        
         // add info bubble to marker
-         // TODO FIXME figure out edit stuff
-        edit_link = "<br /><a href='#' onclick='populateFormFromDataTable(dataTable_global, " + i.toString() + "); showEditTripPrompt();'>Edit Trip</a>"; // note that we expect the order in dataTable_global to be the same as the order in which we traverse the trips here; a bit too coupled maybe TODO maybe use alternative storage for all trips
-        get_in_touch_link = "<a href='mailto:" + trip['user_email'] 
-            + "?subject=[pton.in] Hey, regarding your trip to " + trip['location_name'] 
-            + " on " + trip['start_date_short'] + "' target='_blank'>Get in touch</a>" */
-        event_link = "<br /><br /><a href='" + event_obj['url'] + "'>" + 'link' +  "</a>";
-        events_info_text[i] = event_obj['title'] + " on " + event_obj['start_date_short'] + " at " + event_obj['start_time_short']
+        var edit_link = "<br /><a href='#' onclick='populateEventFormFromData(events_data_global, " + i.toString() + "); showEditEventPrompt();'>Edit Event</a>";
+        var added_by_link = "<br />Added by <a href='mailto:" + event_obj['user_email'] 
+            + "?subject=[pton.in] Hey, regarding your event " + event_obj['title'] 
+            + " on " + event_obj['start_date_short'] + "' target='_blank'>" + event_obj['user_name'] + "</a>";
+        var event_title = (event_obj['url']
+            ? "<br /><br /><a href='" + event_obj['url'] + "' target='_blank'>" + event_obj['title'] +  "</a>"
+            : event_obj['title']
+        );
+        event_info_texts_global[i] = event_title + " on " + event_obj['start_date_short'] + " at " + event_obj['start_time_short']
                      + "<br /><br />" + event_obj['description'] 
-                     + (event_obj['url'] ? event_link : "");
+                     + added_by_link
+                     + (is_mine ? edit_link : "");
 
         google.maps.event.addListener(marker, 'click', (function(event, index) { 
             return function() {
-                infowindow.content = events_info_text[index];
+                infowindow.content = event_info_texts_global[index];
                 infowindow.open(map, this);
             }
         })(marker, i));
         
+        // TODO
         google.maps.event.addListener(marker, 'dragend', (function(event, row) {
             return function() {
-                location_lat = marker.position.lat();
-                location_long = marker.position.lng();
+                var location_lat = marker.position.lat();
+                var location_long = marker.position.lng();
                 // again, a bit of coupling -- we use dataTable_global to retrieve the trip_id... although we could avoid this by passing it directly, we do need to change the location_lat and location_long in the table anyway, so might as well use it all the way. TODO fix when (if) we use an alternative global representation for all trips (like edit_link above)
-                trip_id = dataTable_global.getValue(row, 15);
+                var trip_id = dataTable_global.getValue(row, 15);
                 change_latlong(trip_id, location_lat, location_long); 
                 // update the date times in table for the edit prompt
                 dataTable_global.setValue(row, 10, location_lat.toString()); 
@@ -161,40 +191,10 @@ function get_events_for_map_success(data, textStatus, jqXHR) {
         })(marker, i));
     }
 
-    updateEventFeed();
 }
 
 
-
-
-function initialize_map() {
-    // init map
-    var center = new google.maps.LatLng(20,0);
-    var mapOptions = {
-        zoom: 2,
-        center: center,
-        scrollwheel: false,
-        mapTypeId: google.maps.MapTypeId.ROADMAP,
-    }
-    var map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
-
-    initialize_autocomplete(map);
-
-    map_global = map;
-    get_trips_for_map(get_trips_for_map_success); // fetch all trips from db using ajax
-    get_events_for_map(get_events_for_map_success);
-
-    // upadte trips in timeline with those visible on map
-    google.maps.event.addListener(map, 'bounds_changed', function() {
-        var bounds = map.getBounds();
-        onZoom(bounds);
-    });
-}
-
-google.maps.event.addDomListener(window, 'load', initialize_map);
-
-
-function initialize_autocomplete(map) {
+function initialize_search_autocomplete(map) {
   var input = document.getElementById('searchTextField');
   var autocomplete = new google.maps.places.Autocomplete(input);
 
