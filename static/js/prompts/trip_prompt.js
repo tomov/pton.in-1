@@ -35,10 +35,10 @@ function clearTripBox() {
     $('#trip_location_long').val('');
 }
 
-function populateFormFromDataTable(data, row) { // data is either dataTable or dataView, row is the row index... TODO a bit of coupling with dataTable_global and its internal structure
+function populateTripFormFromDataTable(data, row) { // data is either dataTable or dataView, row is the row index... TODO a bit of coupling with dataTable_global and its internal structure
     var location_name = data.getValue(row, 9);
-    var start_date = data.getValue(row, 12);
-    var end_date = data.getValue(row, 13);
+    var start_date_form = data.getValue(row, 12);
+    var end_date_form = data.getValue(row, 13);
     var doing_what = data.getValue(row, 5);
     var comment = data.getValue(row, 6);
     var location_lat = data.getValue(row, 10);
@@ -46,8 +46,8 @@ function populateFormFromDataTable(data, row) { // data is either dataTable or d
     trip_id_global = data.getValue(row, 15); // this is crucial for the form to work
     $('#trip_location_name').val(location_name);
     $('#trip_doing_what').val(doing_what);
-    $('#trip_start_date').val(start_date);
-    $('#trip_end_date').val(end_date);
+    $('#trip_start_date').val(start_date_form);
+    $('#trip_end_date').val(end_date_form);
     $('#trip_comment').val(comment);
     $('#trip_location_lat').val(location_lat);
     $('#trip_location_long').val(location_long);

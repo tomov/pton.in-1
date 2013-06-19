@@ -39,27 +39,28 @@ function clearEventBox() {
     $('#event_location_long').val('');
 }
 
-/*
-TODO hehe... can't edit yet
 
-function populateFormFromDataTable(data, row) { // data is either dataTable or dataView, row is the row index... TODO a bit of coupling with dataTable_global and its internal structure
-    var location_name = data.getValue(row, 9);
-    var start_date = data.getValue(row, 12);
-    var end_date = data.getValue(row, 13);
-    var doing_what = data.getValue(row, 5);
-    var comment = data.getValue(row, 6);
-    var location_lat = data.getValue(row, 10);
-    var location_long = data.getValue(row, 11);
-    trip_id_global = data.getValue(row, 15); // this is crucial for the form to work
-    $('#location_name').val(location_name);
-    $('#doing_what').val(doing_what);
-    $('#start_date').val(start_date);
-    $('#end_date').val(end_date);
-    $('#comment').val(comment);
-    $('#location_lat').val(location_lat);
-    $('#location_long').val(location_long);
+function populateEventFormFromData(events, index) { // data is either dataTable or dataView, row is the row index... TODO a bit of coupling with dataTable_global and its internal structure
+    var event_obj = events[index];
+    var title = event_obj['title'];
+    var description = event_obj['description'];
+    var url = event_obj['url'];
+    var start_date_form = event_obj['start_date_form'];
+    var end_date_form = event_obj['end_date_form'];
+    var location_name = event_obj['location_name'];
+    var location_lat = event_obj['location_lat'];
+    var location_long = event_obj['location_long'];
+    event_id_global = event_obj['id']; // this is crucial for the form to work
+    $('#event_title').val(title);
+    $('#event_description').val(description);
+    $('#event_url').val(url);
+    $('#event_start_date').val(start_date_form);
+    $('#event_end_date').val(end_date_form);
+    $('#event_location_name').val(location_name);
+    $('#event_location_lat').val(location_lat);
+    $('#event_location_long').val(location_long);
 }
-*/
+
 
 function getEventFormData() {
     var form_data = {
