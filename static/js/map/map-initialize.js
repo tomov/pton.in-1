@@ -90,7 +90,6 @@ function get_events_for_map_success(data, textStatus, jqXHR) {
     var events = data;
     events_data_global = events; // store events globally
     var map = map_global;
-    console.log(events);
 
     // init data points
     events_info_text = new Array();
