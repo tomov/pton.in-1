@@ -376,6 +376,7 @@ def get_events(group_alias = None):
         return format_response('User not logged in', True)
 
     group = get_group(group_alias)
+    # TODO FIXME filter only events in the future!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     if group:
         events = Event.query.filter_by(group_id=group.id)
     else:
@@ -397,6 +398,7 @@ def get_events(group_alias = None):
         event_dict['location_name'] = event.location_name
         event_dict['start_date_short'] = event.start_date.strftime('%b %d')
         event_dict['end_date_short'] = event.end_date.strftime('%b %d')
+        event_dict['start_time_short'] = event.start_date.strftime('%H:%M AM/PM')   # TODO FIXME is that the format??????????????
         event_dict['start_date'] = event.start_date.strftime('%Y-%m-%d')
         event_dict['end_date'] = event.end_date.strftime('%Y-%m-%d')
         event_dict['user_name'] = event.user.first_name + ' ' + event.user.last_name
