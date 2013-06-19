@@ -1,5 +1,6 @@
 from flask.ext.wtf import Form, validators
-from wtforms import TextField, DateField, HiddenField, BooleanField, TextAreaField
+from wtforms import TextField, DateField, HiddenField, BooleanField, TextAreaField, IntegerField
+from wtforms.widgets import HiddenInput
 from wtforms import ValidationError
 import re
 
@@ -18,7 +19,7 @@ class NewTripForm(Form):
      comment = TextAreaField()
 
 class NewEventForm(Form):
-     group_id = HiddenField()
+     group_id = IntegerField(widget=HiddenInput())
      title = TextField([validators.Required()])
      description = TextAreaField()
      url = TextField()

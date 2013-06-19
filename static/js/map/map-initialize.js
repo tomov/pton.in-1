@@ -82,11 +82,91 @@ function get_trips_for_map_success(data, textStatus, jqXHR) {
     var mc = new MarkerClusterer(map, markers_global, mcOptions); 
 }
 
+
+
+
+
 function get_events_for_map_success(data, textStatus, jqXHR) {
     var events = data;
-    alert(' got events successfully!!! ');
+    events_data_global = events; // store events globally
+    var map = map_global;
     console.log(events);
+
+    // init data points
+    events_info_text = new Array();
+    event_markers_global = new Array();
+
+    // pretty pin icon 
+    var getPinIcon = function(image) {
+       return new google.maps.MarkerImage(
+         image, null, null, null,
+         new google.maps.Size(30,30));
+    };
+
+    // pretty info window
+    var infowindow = new google.maps.InfoWindow({content: 'blank'});
+
+    // populate trips on map
+    for (var i = 0; i < events.length; i++)
+    {
+        // create pin on map
+        var event_obj = events[i]
+        // each pt has latlng + image (that's it)
+        var noiseScale = 0.1; // pulled out of Momchil's ass
+        var noiseLat = (Math.random() - 0.5) * noiseScale;
+        var noiseLng = (Math.random() - 0.5) * noiseScale;
+        var latlng = new google.maps.LatLng(event_obj['location_lat'] + noiseLat, event_obj['location_long'] + noiseLng);
+        var image = "http://graph.facebook.com/" + event_obj['user_fbid'] + "/picture"; // TODO FIXME find image of note / normal pin icon!!!
+        var pinIcon = getPinIcon(image);
+        var is_mine = event_obj['is_mine'];
+
+        var marker = new google.maps.Marker({
+            position: latlng,
+            map: map,
+            draggable: is_mine
+        });
+
+        event_markers_global.push(marker); // for zoomin/zoom out changes
+
+        /*
+        // add info bubble to marker
+         // TODO FIXME figure out edit stuff
+        edit_link = "<br /><a href='#' onclick='populateFormFromDataTable(dataTable_global, " + i.toString() + "); showEditTripPrompt();'>Edit Trip</a>"; // note that we expect the order in dataTable_global to be the same as the order in which we traverse the trips here; a bit too coupled maybe TODO maybe use alternative storage for all trips
+        get_in_touch_link = "<a href='mailto:" + trip['user_email'] 
+            + "?subject=[pton.in] Hey, regarding your trip to " + trip['location_name'] 
+            + " on " + trip['start_date_short'] + "' target='_blank'>Get in touch</a>" */
+        event_link = "<br /><br /><a href='" + event_obj['url'] + "'>" + 'link' +  "</a>";
+        events_info_text[i] = event_obj['title'] + " on " + event_obj['start_date_short'] + " at " + event_obj['start_time_short']
+                     + "<br /><br />" + event_obj['description'] 
+                     + (event_obj['url'] ? event_link : "");
+
+        google.maps.event.addListener(marker, 'click', (function(event, index) { 
+            return function() {
+                infowindow.content = events_info_text[index];
+                infowindow.open(map, this);
+            }
+        })(marker, i));
+        
+        google.maps.event.addListener(marker, 'dragend', (function(event, row) {
+            return function() {
+                location_lat = marker.position.lat();
+                location_long = marker.position.lng();
+                // again, a bit of coupling -- we use dataTable_global to retrieve the trip_id... although we could avoid this by passing it directly, we do need to change the location_lat and location_long in the table anyway, so might as well use it all the way. TODO fix when (if) we use an alternative global representation for all trips (like edit_link above)
+                trip_id = dataTable_global.getValue(row, 15);
+                change_latlong(trip_id, location_lat, location_long); 
+                // update the date times in table for the edit prompt
+                dataTable_global.setValue(row, 10, location_lat.toString()); 
+                dataTable_global.setValue(row, 11, location_long.toString()); 
+                //alert('moved marker number ' + row.toString() + ' coords ' + location_lat.toString() + ' ' + location_long.toString());
+            }
+        })(marker, i));
+    }
+
+    updateEventFeed();
 }
+
+
+
 
 function initialize_map() {
     // init map

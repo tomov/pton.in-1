@@ -1,6 +1,7 @@
 // Trips data, models, ajax calls, etc
 //
 event_id_global = null;       // current trip to be edited; this is changed in onEdit and used in trip_prompt 
+//events_data_global = null;    // all events fetched by backend -- stored for filtering in the feed ;; do not declare here b/c it gets populated elsewhere...
 
 function get_events_for_map(callback) { // TODO perhaps merge with timeline one?
     $.ajax({

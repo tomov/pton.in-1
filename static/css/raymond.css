@@ -1,3 +1,11 @@
+.event-feed {
+  position: absolute;
+  z-index: 1;
+  right: 0px;
+  margin-right: 30px;
+  background-color: #b0c4de;
+}
+
 body { 
   overflow-x: hidden;
 }

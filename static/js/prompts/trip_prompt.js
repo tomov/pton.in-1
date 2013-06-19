@@ -26,13 +26,13 @@ function hideTripPrompt() {
 
 function clearTripBox() {
     // call this to change the form from Edit mode to Add mode
-    $('#location_name').val('');
-    $('#doing_what').val('');
-    $('#start_date').val('');
-    $('#end_date').val('');
-    $('#comment').val('');
-    $('#location_lat').val('');
-    $('#location_long').val('');
+    $('#trip_location_name').val('');
+    $('#trip_doing_what').val('');
+    $('#trip_start_date').val('');
+    $('#trip_end_date').val('');
+    $('#trip_comment').val('');
+    $('#trip_location_lat').val('');
+    $('#trip_location_long').val('');
 }
 
 function populateFormFromDataTable(data, row) { // data is either dataTable or dataView, row is the row index... TODO a bit of coupling with dataTable_global and its internal structure
@@ -44,50 +44,50 @@ function populateFormFromDataTable(data, row) { // data is either dataTable or d
     var location_lat = data.getValue(row, 10);
     var location_long = data.getValue(row, 11);
     trip_id_global = data.getValue(row, 15); // this is crucial for the form to work
-    $('#location_name').val(location_name);
-    $('#doing_what').val(doing_what);
-    $('#start_date').val(start_date);
-    $('#end_date').val(end_date);
-    $('#comment').val(comment);
-    $('#location_lat').val(location_lat);
-    $('#location_long').val(location_long);
+    $('#trip_location_name').val(location_name);
+    $('#trip_doing_what').val(doing_what);
+    $('#trip_start_date').val(start_date);
+    $('#trip_end_date').val(end_date);
+    $('#trip_comment').val(comment);
+    $('#trip_location_lat').val(location_lat);
+    $('#trip_location_long').val(location_long);
 }
 
 function getTripFormData() {
     var form_data = {
-        'csrf_token': $('#csrf_token').val(),
-        'location_name': $('#location_name').val(),
-        'doing_what': $('#doing_what').val(),
-        'location_lat': $('#location_lat').val(),
-        'location_long': $('#location_long').val(),
-        'start_date': $('#start_date').val(),
-        'end_date': $('#end_date').val(),
-        'comment': $('#comment').val()
+        'csrf_token': $('#trip_csrf_token').val(),
+        'location_name': $('#trip_location_name').val(),
+        'doing_what': $('#trip_doing_what').val(),
+        'location_lat': $('#trip_location_lat').val(),
+        'location_long': $('#trip_location_long').val(),
+        'start_date': $('#trip_start_date').val(),
+        'end_date': $('#trip_end_date').val(),
+        'comment': $('#trip_comment').val()
     };
-    if ($('#looking_for_roomies').is(':checked')) {
-        form_data['looking_for_roomies'] = $('#looking_for_roomies').val();
+    if ($('#trip_looking_for_roomies').is(':checked')) {
+        form_data['looking_for_roomies'] = $('#trip_looking_for_roomies').val();
     }
-    if ($('#looking_for_housing').is(':checked')) {
-        form_data['looking_for_housing'] = $('#looking_for_housing').val();
+    if ($('#trip_looking_for_housing').is(':checked')) {
+        form_data['looking_for_housing'] = $('#trip_looking_for_housing').val();
     }
     return form_data;
 }
 
 $(function() {
   if (document.getElementById('trip_prompt')) {
-    var input = document.getElementById('location_name');
+    var input = document.getElementById('trip_location_name');
     var prompt_autocomplete = new google.maps.places.Autocomplete(input);
     google.maps.event.addListener(prompt_autocomplete, 'place_changed', function() {
         var place = prompt_autocomplete.getPlace();
-        $('#location_lat').val(place.geometry.location.lat());
-        $('#location_long').val(place.geometry.location.lng());
+        $('#trip_location_lat').val(place.geometry.location.lat());
+        $('#trip_location_long').val(place.geometry.location.lng());
     });
 
     $('#hide-trip-link').click(hideTripPrompt);
 
     if (document.getElementById('show-trip-link')) {
       $('#show-trip-link').click(function() {
-          onNew();
+          showAddTripPrompt();
       });
     }
 
@@ -104,7 +104,27 @@ $(function() {
     $('#delete-trip-button').click(function() {
         delete_trip(trip_id_global, deleteTripSuccess);
     });
- 
+
+    $( "#trip_start_date" ).datepicker({
+      defaultDate: "+1w",
+      changeMonth: true,
+      changeYear: true,
+      numberOfMonths: 1,
+      onClose: function( selectedDate ) {
+        $( "#trip_end_date" ).datepicker( "option", "minDate", selectedDate );
+      }
+    });
+
+    $( "#trip_end_date" ).datepicker({
+      defaultDate: "+1w",
+      changeMonth: true,
+      changeYear: true,
+      numberOfMonths: 1,
+      onClose: function( selectedDate ) {
+        $( "#trip_start_date" ).datepicker( "option", "maxDate", selectedDate );
+      }
+    });
+
   }
 });
 

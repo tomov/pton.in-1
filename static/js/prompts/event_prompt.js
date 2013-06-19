@@ -29,14 +29,14 @@ function clearEventBox() {
     // TODO conflict with clearTripBox? same field ids?
     // $('#group_id').val(''); -- we don't clear this; the field is used as a storage between backend and submit. The group id is passed in application.py/index and is not changed
     // unlike the user_id, it is not stored in the session so it is more convenient to pass it that way
-    $('#title').val('');
-    $('#description').val('');
-    $('#url').val('');
-    $('#start_date').val('');
-    $('#end_date').val('');
-    $('#location_name').val('');
-    $('#location_lat').val('');
-    $('#location_long').val('');
+    $('#event_title').val('');
+    $('#event_description').val('');
+    $('#event_url').val('');
+    $('#event_start_date').val('');
+    $('#event_end_date').val('');
+    $('#event_location_name').val('');
+    $('#event_location_lat').val('');
+    $('#event_location_long').val('');
 }
 
 /*
@@ -63,37 +63,38 @@ function populateFormFromDataTable(data, row) { // data is either dataTable or d
 
 function getEventFormData() {
     var form_data = {
-        'csrf_token': $('#csrf_token').val(),
-        'group_id': $('#group_id').val(),
-        'title': $('#doing_what').val(),
-        'description' : $('#description').val(),
-        'url': $('#url').val(),
-        'location_name': $('#location_name').val(),
-        'location_lat': $('#location_lat').val(),
-        'location_long': $('#location_long').val(),
-        'start_date': $('#start_date').val(),
-        'end_date': $('#end_date').val(),
-        'comment': $('#comment').val()
+        'csrf_token': $('#event_csrf_token').val(),
+        'title': $('#event_title').val(),
+        'description' : $('#event_description').val(),
+        'url': $('#event_url').val(),
+        'location_name': $('#event_location_name').val(),
+        'location_lat': $('#event_location_lat').val(),
+        'location_long': $('#event_location_long').val(),
+        'start_date': $('#event_start_date').val(),
+        'end_date': $('#event_end_date').val(),
     };
+    if ($('#event_group_id').val()) {  // this is b/c if there is no group, the group_id field is an empty string u''
+        form_data['group_id'] = $('#event_group_id').val();
+    }
     return form_data;
 }
 
 $(function() {
   if (document.getElementById('event_prompt')) {
-    var input = document.getElementById('location_name');
+    var input = document.getElementById('event_location_name');
     var event_prompt_autocomplete = new google.maps.places.Autocomplete(input);
     google.maps.event.addListener(event_prompt_autocomplete, 'place_changed', function() {
         var place = event_prompt_autocomplete.getPlace();
         // TODO conflict with trip_prompt form? investigate
-        $('#location_lat').val(place.geometry.location.lat());
-        $('#location_long').val(place.geometry.location.lng());
+        $('#event_location_lat').val(place.geometry.location.lat());
+        $('#event_location_long').val(place.geometry.location.lng());
     });
 
     $('#hide-event-link').click(hideEventPrompt);
 
     if (document.getElementById('show-event-link')) {
       $('#show-event-link').click(function() {
-          onNew();
+          showAddEventPrompt();
       });
     }
 
@@ -110,7 +111,26 @@ $(function() {
     $('#delete-event-button').click(function() {
         delete_event(event_id_global, deleteEventSuccess);
     });
- 
+
+    $( "#event_start_date" ).datepicker({
+      defaultDate: "+1w",
+      changeMonth: true,
+      changeYear: true,
+      numberOfMonths: 1,
+      onClose: function( selectedDate ) {
+        $( "#event_end_date" ).datepicker( "option", "minDate", selectedDate );
+      }
+    });
+
+    $( "#event_end_date" ).datepicker({
+      defaultDate: "+1w",
+      changeMonth: true,
+      changeYear: true,
+      numberOfMonths: 1,
+      onClose: function( selectedDate ) { 
+        $( "#event_start_date" ).datepicker( "option", "maxDate", selectedDate );
+      } 
+    });
   }
 });
 
