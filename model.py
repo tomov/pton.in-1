@@ -636,6 +636,13 @@ users_groups_table = db.Table('users_groups',
     db.Column('group_id', db.Integer, db.ForeignKey('groups.id'))
 )
 
+users_meals_table = db.Table('users_meals',
+    db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
+    db.Column('meal_id', db.Integer, db.ForeignKey('meals.id')),
+    db.Column('confirmed', db.Boolean),
+    db.Column('message', db.String(length = 250))
+)
+
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key = True)
@@ -649,9 +656,11 @@ class User(db.Model):
     class_year = db.Column(db.Integer)
     major = db.Column(db.String(length = 50))
     trips = db.relationship('Trip', backref = 'user')
-    events = db.relationship('Event', backref = 'user')
+    events_owned = db.relationship('Event', backref = 'user')
     groups_owned = db.relationship('Group', backref = 'user')
     groups = db.relationship('Group', secondary = users_groups_table, backref = 'users')
+    meals_suggested = db.relationship('Meal', backref = 'user')
+    meals = db.relationship('Meal', secondary = users_meals_table, backref = 'invitees')
 
     def __init__(self, fbid, email = None, first_name = None, last_name = None, class_year = None, major = None):
         self.fbid = fbid
@@ -826,7 +835,35 @@ class Event(db.Model):
         self.modified = self.created
 
     def __repr__(self):
-        return '<Trip %r>' % (self.title)
+        return '<Event %r>' % (self.title)
+
+
+class Meal(db.Model):
+    __tablename__ = 'meals'
+    id = db.Column(db.Integer, primary_key = True)
+    created = db.Column(db.DateTime)
+    modified = db.Column(db.DateTime)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    when = db.Column(db.DateTime)
+    message = db.Column(db.String(length = 1000))
+    location_name = db.Column(db.String(length = 100))
+    location_lat = db.Column(db.Float(precision = 32))
+    location_long = db.Column(db.Float(precision = 32))
+    location_is_exact = db.Column(db.Boolean)
+
+    def __init__(self, user_id, when = None, message = None, location_name = None, location_lat = None, location_long = None, location_is_exact = None):
+        self.user_id = user_id
+        self.when = when
+        self.message = message
+        self.location_name = location_name
+        self.location_lat = location_lat
+        self.location_long = location_long
+        self.location_is_exact = location_is_exact
+        self.created = datetime.utcnow()
+        self.modified = self.created
+
+    def __repr__(self):
+        return '<Meal %r>' % (self.message)
 
 
 # call this somewhere in application.py/home, run and open home page

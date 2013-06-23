@@ -11,5 +11,8 @@ function onZoomFeedUpdate(bounds) {
             visible_events.push(events_data_global[j]);
         }
     }
+
+    clear_feed();
     populate_feed_with_events(visible_events);
+    populate_feed_with_meals(meals_data_global); // TODO FIXME
 }

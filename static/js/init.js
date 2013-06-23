@@ -6,6 +6,7 @@ function initialize_all() {
 	initialize_feed();
 	get_trips(get_trips_success);
 	get_events(get_events_success);
+	get_meals(get_meals_success);
 }
 
 // timeline visualization

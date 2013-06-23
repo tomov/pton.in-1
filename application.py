@@ -6,10 +6,10 @@ import pprint
 from datetime import datetime
 from wtforms.ext.sqlalchemy.orm import model_form
 
-from forms import NewTripForm, NewEventForm
+from forms import NewTripForm, NewEventForm, NewMealForm
 import model
 from model import db
-from model import User, Trip, Group, Alias, Event
+from model import User, Trip, Group, Alias, Event, Meal
 from model import create_db
 from constants import *
 from util import *
@@ -108,10 +108,12 @@ def index(group_alias = None):
         else:
             event = Event(user.id)
         event_form = NewEventForm(obj=event, secret_key=os.environ[SECRET_KEY])
+        meal = Meal(user.id)
+        meal_form = NewMealForm(obj=meal, secret_key=os.environ[SECRET_KEY])
         # see if we need to ask user to add trip
         trip_count = Trip.query.filter_by(user_id=user.id).count()
         show_prompt = (trip_count == 0)
-        return render_template('main.html', group_alias=group_alias, group=group, trip_form=trip_form, event_form=event_form, show_prompt=show_prompt)
+        return render_template('main.html', group_alias=group_alias, group=group, trip_form=trip_form, event_form=event_form, meal_form=meal_form, show_prompt=show_prompt)
 
 @app.route("/<group_alias>/login")
 @app.route("/login")
@@ -399,7 +401,7 @@ def get_events(group_alias = None):
         event_dict['start_date_short'] = event.start_date.strftime('%b %d')
         event_dict['end_date_short'] = event.end_date.strftime('%b %d')
         event_dict['start_time_short'] = event.start_date.strftime('%H:%M AM/PM')   # TODO FIXME is that the format??????????????
-        event_dict['start_date'] = event.start_date.strftime('%Y-%m-%d')
+        event_dict['start_date'] = event.start_date.strftime('%Y-%m-%d')             # FIXME
         event_dict['end_date'] = event.end_date.strftime('%Y-%m-%d')
         event_dict['user_name'] = event.user.first_name + ' ' + event.user.last_name
         event_dict['user_first_name'] = event.user.first_name
@@ -408,7 +410,7 @@ def get_events(group_alias = None):
         event_dict['user_fbid'] = event.user.fbid
         event_dict['group_id'] = event.group_id
         event_dict['is_mine'] = (event.user.id == session.get('user_id', None))
-        event_dict['start_date_form'] = event.start_date.strftime('%m/%d/%Y')
+        event_dict['start_date_form'] = event.start_date.strftime('%m/%d/%Y')   # FIXME
         event_dict['end_date_form'] = event.end_date.strftime('%m/%d/%Y')
         result_dict.append(event_dict)
 
@@ -462,6 +464,92 @@ def delete_event(event_id):
     db.session.commit()
     return format_response('SUCCESS!')
 
+
+###################### meals ###################################
+
+@app.route("/<group_alias>/get_meals", methods=['GET'])
+@app.route("/get_meals", methods=['GET'])
+def get_meals(group_alias = None):
+    if not session.get('logged_in'):
+        return format_response('User not logged in', True)
+
+    group = get_group(group_alias)
+    # TODO FIXME filter only meals in the future!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    if group_alias == 'me':
+        # the "me" page -- this is kind of hacky... maybe find a better way? also see get_group
+        meals = Meal.query.filter_by(user_id=session.get('user_id'))
+    else:
+        # TODO FIXME ONLY MEALS WHERE I AM INVITED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        meals = Meal.query.all()
+
+    result_dict = []
+    for meal in meals:
+        meal_dict = dict()
+        meal_dict['id'] = meal.id
+        meal_dict['message'] = meal.message
+        meal_dict['location_lat'] = meal.location_lat
+        meal_dict['location_long'] = meal.location_long
+        meal_dict['location_name'] = meal.location_name
+        meal_dict['when_short'] = meal.start_date.strftime('%b %d') # TODO FIXME format include hour!!!
+        meal_dict['when'] = meal.start_date.strftime('%Y-%m-%d')  # FIXME same...
+        meal_dict['when_form'] = meal.start_date.strftime('%m/%d/%Y') # FIXME same
+        meal_dict['user_name'] = meal.user.first_name + ' ' + meal.user.last_name
+        meal_dict['user_first_name'] = meal.user.first_name
+        meal_dict['user_last_name'] = meal.user.last_name
+        meal_dict['user_email'] = meal.user.email
+        meal_dict['user_fbid'] = meal.user.fbid
+        meal_dict['is_mine'] = (meal.user.id == session.get('user_id', None))
+        result_dict.append(meal_dict)
+
+    dump = json.dumps(result_dict)
+    return dump
+
+
+@app.route("/add_meal", methods=['POST'])
+def add_meal():
+    if not session.get('logged_in'):
+        return format_response('User not logged in', True)
+
+    meal = Meal(session.get('user_id'))
+    form = NewMealForm(obj=meal, secret_key=os.environ[SECRET_KEY])
+    if form.validate_on_submit():
+        form.populate_obj(meal)
+        db.session.add(meal)
+        db.session.commit()
+        return format_response('SUCCESS!');
+
+    return format_response('Could not add meal for some reason...', True) 
+
+@app.route("/edit_meal/<meal_id>", methods=['POST'])
+def edit_meal(meal_id):
+    if not session.get('logged_in'):
+        return format_response('User not logged in', True)
+    meal = Meal.query.filter_by(id=meal_id).first()
+    if not meal:
+        return format_response('No meal with given id', True)
+    if meal.user.id != session.get('user_id'):
+        return format_response('Meal does not belong to logged in user', True)
+
+    form = NewMealForm(obj=meal, secret_key=os.environ[SECRET_KEY])
+    if form.validate_on_submit():
+        form.populate_obj(meal)
+        db.session.commit()
+        return format_response('SUCCESS!');
+    return format_response('Could not edit meal for some reason...', True)
+
+@app.route("/delete_meal/<meal_id>", methods = ['GET'])
+def delete_meal(meal_id):
+    if not session.get('logged_in'):
+        return format_response('User not logged in', True)
+    meal = Meal.query.filter_by(id=meal_id).first()
+    if not meal:
+        return format_response('No meal with given id', True)
+    if meal.user.id != session.get('user_id'):
+        return format_response('Meal does not belong to logged in user', True)
+
+    db.session.delete(meal)
+    db.session.commit()
+    return format_response('SUCCESS!')
 
 #----------------------------------------
 # launch

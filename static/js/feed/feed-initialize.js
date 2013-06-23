@@ -1,11 +1,14 @@
 // initialize the feed
 
 function initialize_feed() {
+    clear_feed();
+}
+
+function clear_feed() {
+    $('#feed tr').not(':first').remove();
 }
 
 function populate_feed_with_events(events) {
-    $('#feed tr').not(':first').remove();
-
     var feed_new_html = '';
     for (var i = 0; i < events.length; i++) {
         var event_obj = events[i];
@@ -18,4 +21,17 @@ function populate_feed_with_events(events) {
     }
 
     $('#feed tr').first().after(feed_new_html); 
+}
+
+function populate_feed_with_meals(meals) {
+    var feed_new_html = '';
+    for (var i = 0; i < meals.length; i++) {
+        var meal_obj = meals[i];
+        var info_text = "Meal with " + meal_obj['user_first_name'] + " on " + meal_obj['when_short']
+                     + "<br /><br />" + meal_obj['message'];
+
+        feed_new_html += '<tr><td>' + info_text + '</td></tr>';
+    }
+
+    $('#feed tr').first().after(feed_new_html);
 }

@@ -6,6 +6,8 @@
 // trip_info_texts_global                    // info balloons on map for events
 // event_markers_global               // markers on map for trips
 // event_info_texts_global                    // info balloons on map for events
+// meal_markers_global               // markers on map for meals
+// meal_info_texts_global                    // info balloons on map for meals
 // map_global                          // the google map object
 
 function initialize_map() {
@@ -25,6 +27,8 @@ function initialize_map() {
     trip_markers_global = new Array();
     event_markers_global = new Array();
     event_info_texts_global = new Array();
+    meal_markers_global = new Array();
+    meal_info_texts_global = new Array();
 
     // other init stuffs
     initialize_search_autocomplete(map);
@@ -131,7 +135,7 @@ function populate_map_with_events(events) {
     // pretty info window
     var infowindow = new google.maps.InfoWindow({content: 'blank'});
 
-    // populate trips on map
+    // populate events on map
     for (var i = 0; i < events.length; i++)
     {
         // create pin on map
@@ -192,6 +196,81 @@ function populate_map_with_events(events) {
     }
 
 }
+
+
+
+
+function populate_map_with_meals(meals) {
+    meals_data_global = meals; // store meals globally
+    var map = map_global;
+
+    // pretty pin icon 
+    var getPinIcon = function(image) {
+       return new google.maps.MarkerImage(
+         image, null, null, null,
+         new google.maps.Size(30,30));
+    };
+
+    // pretty info window
+    var infowindow = new google.maps.InfoWindow({content: 'blank'});
+
+    // populate meals on map
+    for (var i = 0; i < meals.length; i++)
+    {
+        // create pin on map
+        var meal_obj = meals[i];
+        // each pt has latlng + image (that's it)
+        var noiseScale = 0.1; // pulled out of Momchil's ass
+        var noiseLat = (Math.random() - 0.5) * noiseScale;
+        var noiseLng = (Math.random() - 0.5) * noiseScale;
+        var latlng = new google.maps.LatLng(meal_obj['location_lat'] + noiseLat, meal_obj['location_long'] + noiseLng);
+        var image = "http://graph.facebook.com/" + meal_obj['user_fbid'] + "/picture"; // TODO FIXME find image of note / normal pin icon!!!
+        var pinIcon = getPinIcon(image);
+        var is_mine = meal_obj['is_mine'];
+
+        var marker = new google.maps.Marker({
+            position: latlng,
+            map: map,
+            draggable: is_mine
+        });
+
+        meal_markers_global.push(marker); // for zoomin/zoom out changes
+
+        
+        // add info bubble to marker
+        var edit_link = "<br /><a href='#' onclick='populateMealFormFromData(meals_data_global, " + i.toString() + "); showEditMealPrompt();'>Edit Meal</a>";
+        var added_by_link = "<br />Suggested by <a href='mailto:" + meal_obj['user_email'] 
+            + "?subject=[pton.in] Hey, regarding your meal on "
+            + meal_obj['when_short'] + "' target='_blank'>" + meal_obj['user_name'] + "</a>";
+        meal_info_texts_global[i] = "Meal on " + meal_obj['when_short']
+                     + "<br /><br />" + meal_obj['message'] 
+                     + added_by_link
+                     + (is_mine ? edit_link : "");
+
+        google.maps.meal.addListener(marker, 'click', (function(meal, index) { 
+            return function() {
+                infowindow.content = meal_info_texts_global[index];
+                infowindow.open(map, this);
+            }
+        })(marker, i));
+        
+        // TODO
+        google.maps.meal.addListener(marker, 'dragend', (function(meal, row) {
+            return function() {
+                var location_lat = marker.position.lat();
+                var location_long = marker.position.lng();
+                // again, a bit of coupling -- we use dataTable_global to retrieve the trip_id... although we could avoid this by passing it directly, we do need to change the location_lat and location_long in the table anyway, so might as well use it all the way. TODO fix when (if) we use an alternative global representation for all trips (like edit_link above)
+                var trip_id = dataTable_global.getValue(row, 15);
+                change_latlong(trip_id, location_lat, location_long); 
+                // update the date times in table for the edit prompt
+                dataTable_global.setValue(row, 10, location_lat.toString()); 
+                dataTable_global.setValue(row, 11, location_long.toString()); 
+                //alert('moved marker number ' + row.toString() + ' coords ' + location_lat.toString() + ' ' + location_long.toString());
+            }
+        })(marker, i));
+    }
+}
+
 
 
 function initialize_search_autocomplete(map) {

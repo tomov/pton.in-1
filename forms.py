@@ -29,3 +29,10 @@ class NewEventForm(Form):
      start_date = DateField([validators.Required()], format='%m/%d/%Y')
      end_date = DateField([validators.Required()], format='%m/%d/%Y')
 
+class NewMealForm(Form):
+     when = DateField([validators.Required()], format='%m/%d/%Y')
+     message = TextAreaField([validators.Required()])
+     location_name = TextField([validators.Required()])
+     location_lat = HiddenField([validators.Required()])
+     location_long = HiddenField([validators.Required()])
+

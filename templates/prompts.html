@@ -1,6 +1,5 @@
 <div id="trip_prompt"  style="position:absolute;width:100%;" {% if not show_prompt %}hidden{% endif %}>
   <div class="populate">
-
   <center>
   <h1>Where will you be this summer?</h1>
   <h3 class="sub">Tell your friends and find out where they'll be!</h3>
@@ -27,14 +26,12 @@
       <a id="hide-trip-link" class="hide-link" href="#">hide</a>
     </div>
   </center>
-
   </div>
 </div>
 
 
 <div id="event_prompt"  style="position:absolute;width:100%;" hidden>
   <div class="populate">
-
   <center>
   <h1>(BETA!) What are you up to? Find people to go with!</h1>
   <h3 class="sub">Your friends will see this event on the map and in their feed.</h3>
@@ -58,6 +55,29 @@
       <a id="hide-event-link" class="hide-link" href="#">hide</a>
     </div>
   </center>
+  </div>
+</div>
 
+<div id="meal_prompt"  style="position:absolute;width:100%;" hidden>
+  <div class="populate">
+  <center>
+  <h1>(BETA!) Grab a meal with someone! Get to meet other Princeton peeps.</h1>
+  <h3 class="sub">You can invite up to 10 people. They will receive an e-mail invitation.</h3>
+    {{ meal_form.csrf_token(id='meal_csrf_token') }}
+    {{ meal_form.when(placeholder='Start Date', id='meal_when')  }}<br />
+    {{ meal_form.location_name(placeholder='Where', id='meal_location_name') }}<br />
+    {{ meal_form.location_lat(id='meal_location_lat') }}
+    {{ meal_form.location_long(id='meal_location_long') }}
+    {{ meal_form.message(placeholder='Message', id='meal_message') }}
+    <div>
+      <input class="btn" id='add-meal-button' type="submit" value="Suggest Meal">
+      <div id="edit-meal-panel" hidden>
+        <p><input class="btn" id='edit-meal-button' type="submit" value="Edit Meal"></p>
+        <p><input id="delete-meal-button" class="delete" type="submit" style="color: white; background-color: red;" value="Cancel Meal"></p>
+      </div>
+
+      <a id="hide-meal-link" class="hide-link" href="#">hide</a>
+    </div>
+  </center>
   </div>
 </div>
