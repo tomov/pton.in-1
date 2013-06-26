@@ -38,6 +38,7 @@ function initialize_map() {
         var bounds = map.getBounds();
         onZoomTimelineUpdate(bounds);
         onZoomFeedUpdate(bounds);
+        onZoomMealPromptUpdate(bounds);
     });
 }
 
@@ -247,7 +248,7 @@ function populate_map_with_meals(meals) {
                      + added_by_link
                      + (is_mine ? edit_link : "");
 
-        google.maps.meal.addListener(marker, 'click', (function(meal, index) { 
+        google.maps.event.addListener(marker, 'click', (function(meal, index) { 
             return function() {
                 infowindow.content = meal_info_texts_global[index];
                 infowindow.open(map, this);
@@ -255,7 +256,7 @@ function populate_map_with_meals(meals) {
         })(marker, i));
         
         // TODO
-        google.maps.meal.addListener(marker, 'dragend', (function(meal, row) {
+        google.maps.event.addListener(marker, 'dragend', (function(meal, row) {
             return function() {
                 var location_lat = marker.position.lat();
                 var location_long = marker.position.lng();

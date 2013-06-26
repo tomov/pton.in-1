@@ -2,7 +2,10 @@ from flask.ext.wtf import Form, validators
 from wtforms import TextField, DateField, HiddenField, BooleanField, TextAreaField, IntegerField
 from wtforms.widgets import HiddenInput
 from wtforms import ValidationError
+from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
 import re
+
+from model import User
 
 def special_match(strg, search=re.compile(r'[^a-zA-Z0-9\-.]').search):
     return not bool(search(strg))
@@ -29,7 +32,11 @@ class NewEventForm(Form):
      start_date = DateField([validators.Required()], format='%m/%d/%Y')
      end_date = DateField([validators.Required()], format='%m/%d/%Y')
 
+def all_users():
+     return User.query.order_by(User.first_name, User.last_name)
+
 class NewMealForm(Form):
+     invitees = QuerySelectMultipleField([validators.Required()], query_factory=all_users)
      when = DateField([validators.Required()], format='%m/%d/%Y')
      message = TextAreaField([validators.Required()])
      location_name = TextField([validators.Required()])

@@ -3,19 +3,21 @@
   <center>
   <h1>Where will you be this summer?</h1>
   <h3 class="sub">Tell your friends and find out where they'll be!</h3>
-    {{ trip_form.csrf_token(id='trip_csrf_token') }}
-    {{ trip_form.location_name(placeholder='City (please select)', id='trip_location_name') }}<br />
-    {{ trip_form.doing_what(placeholder='Doing What?', id='trip_doing_what') }}<br />
-    {{ trip_form.location_lat(id='trip_location_lat') }}
-    {{ trip_form.location_long(id='trip_location_long') }}
-    {{ trip_form.start_date(placeholder='Start Date', id='trip_start_date')  }}
-    {{ trip_form.end_date(placeholder='End Date', id='trip_end_date')  }}<br />
-    <p>
-      {{ trip_form.looking_for_roomies(id='trip_looking_for_roomies') }} Looking for Roommates &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-&nbsp; &nbsp; &nbsp; &nbsp;
-      {{ trip_form.looking_for_housing(id='trip_looking_for_housing') }} Looking for Housing &nbsp; &nbsp; &nbsp; &nbsp;
-    </p>
-    {{ trip_form.comment(placeholder='Additional Comments', id='trip_comment') }}<br>
+    <form id='trip_form'>
+      {{ trip_form.csrf_token(id='trip_csrf_token') }}
+      {{ trip_form.location_name(placeholder='City (please select)', id='trip_location_name') }}<br />
+      {{ trip_form.doing_what(placeholder='Doing What?', id='trip_doing_what') }}<br />
+      {{ trip_form.location_lat(id='trip_location_lat') }}
+      {{ trip_form.location_long(id='trip_location_long') }}
+      {{ trip_form.start_date(placeholder='Start Date', id='trip_start_date')  }}
+      {{ trip_form.end_date(placeholder='End Date', id='trip_end_date')  }}<br />
+      <p>
+        {{ trip_form.looking_for_roomies(id='trip_looking_for_roomies') }} Looking for Roommates &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+  &nbsp; &nbsp; &nbsp; &nbsp;
+        {{ trip_form.looking_for_housing(id='trip_looking_for_housing') }} Looking for Housing &nbsp; &nbsp; &nbsp; &nbsp;
+      </p>
+      {{ trip_form.comment(placeholder='Additional Comments', id='trip_comment') }}<br>
+    </form>
     <div>
       <input class="btn" id='add-trip-button' type="submit" value="Add Trip">
       <div id="edit-trip-panel" hidden>
@@ -35,16 +37,18 @@
   <center>
   <h1>(BETA!) What are you up to? Find people to go with!</h1>
   <h3 class="sub">Your friends will see this event on the map and in their feed.</h3>
-    {{ event_form.csrf_token(id='event_csrf_token') }}
-    {{ event_form.group_id(value=group.id, id='event_group_id') }}
-    {{ event_form.title(placeholder='Title', id='event_title') }}<br />
-    {{ event_form.description(placeholder='Description', id='event_description') }}<br />
-    {{ event_form.url(placeholder='URL (if any)', id='event_url') }}<br />
-    {{ event_form.location_name(placeholder='City (please select)', id='event_location_name') }}<br />
-    {{ event_form.location_lat(id='event_location_lat') }}
-    {{ event_form.location_long(id='event_location_long') }}
-    {{ event_form.start_date(placeholder='Start Date', id='event_start_date')  }}
-    {{ event_form.end_date(placeholder='End Date', id='event_end_date')  }}<br />
+    <form id='event_form'>
+      {{ event_form.csrf_token(id='event_csrf_token') }}
+      {{ event_form.group_id(value=group.id, id='event_group_id') }}
+      {{ event_form.title(placeholder='Title', id='event_title') }}<br />
+      {{ event_form.description(placeholder='Description', id='event_description') }}<br />
+      {{ event_form.url(placeholder='URL (if any)', id='event_url') }}<br />
+      {{ event_form.location_name(placeholder='City (please select)', id='event_location_name') }}<br />
+      {{ event_form.location_lat(id='event_location_lat') }}
+      {{ event_form.location_long(id='event_location_long') }}
+      {{ event_form.start_date(placeholder='Start Date', id='event_start_date')  }}
+      {{ event_form.end_date(placeholder='End Date', id='event_end_date')  }}<br />
+    </form>
     <div>
       <input class="btn" id='add-event-button' type="submit" value="Add Event">
       <div id="edit-event-panel" hidden>
@@ -63,12 +67,15 @@
   <center>
   <h1>(BETA!) Grab a meal with someone! Get to meet other Princeton peeps.</h1>
   <h3 class="sub">You can invite up to 10 people. They will receive an e-mail invitation.</h3>
-    {{ meal_form.csrf_token(id='meal_csrf_token') }}
-    {{ meal_form.when(placeholder='Start Date', id='meal_when')  }}<br />
-    {{ meal_form.location_name(placeholder='Where', id='meal_location_name') }}<br />
-    {{ meal_form.location_lat(id='meal_location_lat') }}
-    {{ meal_form.location_long(id='meal_location_long') }}
-    {{ meal_form.message(placeholder='Message', id='meal_message') }}
+    <form id='meal_form'>
+      {{ meal_form.csrf_token(id='meal_csrf_token') }}
+      {{ meal_form.invitees(placeholder='Invitees', id='meal_invitees')  }}<br />
+      {{ meal_form.when(placeholder='When', id='meal_when')  }}<br />
+      {{ meal_form.location_name(placeholder='Where', id='meal_location_name') }}<br />
+      {{ meal_form.location_lat(id='meal_location_lat') }}
+      {{ meal_form.location_long(id='meal_location_long') }}
+      {{ meal_form.message(placeholder='Message', id='meal_message') }}
+    </form>
     <div>
       <input class="btn" id='add-meal-button' type="submit" value="Suggest Meal">
       <div id="edit-meal-panel" hidden>

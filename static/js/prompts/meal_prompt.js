@@ -27,6 +27,7 @@ function hideMealPrompt() {
 function clearMealBox() {
     $('#meal_when').val('');
     $('#meal_message').val('');
+    $('#meal_invitees').val('');
     $('#meal_location_name').val('');
     $('#meal_location_lat').val('');
     $('#meal_location_long').val('');
@@ -50,14 +51,7 @@ function populateMealFormFromData(meals, index) {
 
 
 function getMealFormData() {
-    var form_data = {
-        'csrf_token': $('#meal_csrf_token').val(),
-        'when': $('#meal_when').val(),
-        'message' : $('#meal_message').val(),
-        'location_name': $('#meal_location_name').val(),
-        'location_lat': $('#meal_location_lat').val(),
-        'location_long': $('#meal_location_long').val(),
-    };
+    form_data = $('#meal_form').serialize();
     return form_data;
 }
 
@@ -65,9 +59,8 @@ $(function() {
   if (document.getElementById('meal_prompt')) {
     var input = document.getElementById('meal_location_name');
     var meal_prompt_autocomplete = new google.maps.places.Autocomplete(input);
-    google.maps.meal.addListener(meal_prompt_autocomplete, 'place_changed', function() {
+    google.maps.event.addListener(meal_prompt_autocomplete, 'place_changed', function() {
         var place = meal_prompt_autocomplete.getPlace();
-        // TODO conflict with trip_prompt form? investigate
         $('#meal_location_lat').val(place.geometry.location.lat());
         $('#meal_location_long').val(place.geometry.location.lng());
     });
@@ -100,6 +93,9 @@ $(function() {
       changeYear: true,
       numberOfMonths: 1
     });
+
+    // SOOO ghetto... lolz
+    meal_invitees_all_options_global = $('#meal_invitees > option').clone();
     
   }
 });
@@ -117,5 +113,29 @@ function editMealSuccess(data, textStatus, jqXHR) {
 function deleteMealSuccess(data, textStatus, jqXHR) {
     hideMealPrompt();
     location.reload();  // TODO Like mplungjan explained in the comment below, the reload() function takes an optional parameter that can be set to true to reload from the server rather than the cache. The parameter defaults to false, so by default the page reloads from the browser's cache. --- TEST IN REAL LIFE IN OTHER BROWSERS, OTHER USERS ETC ... also just remove altogether and add trip intelligently to timetable
+}
+
+function onZoomMealPromptUpdate(bounds) {
+    if (typeof trip_markers_global === 'undefined' || typeof timeline === 'undefined') {
+        //  sometimes gets called before the timeline / map has loaded
+        return;
+    }
+    var visible_option_values = {};
+    for (var j=0;j<trip_markers_global.length;j++) {
+        // TODO coupling -- assumes trips_data_global and trip_markers_global are in the same order....
+        // perhaps merge them?
+        var trip = trips_data_global[j];
+        if (bounds.contains(trip_markers_global[j].getPosition())) {
+            var value = trip['user_id'] + ':' + trip['user_fbid'];
+            visible_option_values[value] = true;
+        }
+    }
+    // must do it this way b/c .show() and .hide() don't work for select options...
+    $('#meal_invitees').empty();
+    meal_invitees_all_options_global.each(function() {
+        if (visible_option_values[this.value]) {
+            $('#meal_invitees').append($("<option />").val(this.value).text(this.text));
+        }
+    });
 }
 

@@ -660,7 +660,7 @@ class User(db.Model):
     groups_owned = db.relationship('Group', backref = 'user')
     groups = db.relationship('Group', secondary = users_groups_table, backref = 'users')
     meals_suggested = db.relationship('Meal', backref = 'user')
-    meals = db.relationship('Meal', secondary = users_meals_table, backref = 'invitees')
+    meals = db.relationship('Meal', secondary = users_meals_table, backref = backref('invitees', lazy='dynamic'))
 
     def __init__(self, fbid, email = None, first_name = None, last_name = None, class_year = None, major = None):
         self.fbid = fbid
@@ -674,7 +674,7 @@ class User(db.Model):
         self.last_login = None
 
     def __repr__(self):
-        return '<User %r %r>' % (self.first_name, self.last_name)
+        return '%s %s' % (self.first_name, self.last_name)
 
     # me is the facebook object
     @classmethod

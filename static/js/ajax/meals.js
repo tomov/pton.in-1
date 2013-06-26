@@ -78,7 +78,6 @@ function add_meal(form_data, callback) {
     $.ajax({
         'url' : 'add_meal',   // TODO {{ url_for... }} but can't really
         'type' : 'POST',
-        'dataType' : 'json',
         'data' : form_data,
         'success' : callback,
         'error' : function(jqXHR, textStatus, errorThrown) {
@@ -91,7 +90,6 @@ function edit_meal(meal_id, form_data, callback) {
     $.ajax({
         'url' : 'edit_meal/' + meal_id,   // TODO {{ url_for... }} but can't really
         'type' : 'POST',
-        'dataType' : 'json',
         'data' : form_data,
         'success' : callback,
         'error' : function(jqXHR, textStatus, errorThrown) {
