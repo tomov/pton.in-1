@@ -11,6 +11,7 @@ import model
 from model import db
 from model import User, Trip, Group, Alias, Event, Meal
 from model import create_db
+from model import GraphAPI
 from constants import *
 from util import *
 
@@ -57,7 +58,7 @@ facebook = oauth.remote_app('facebook',
         authorize_url='https://www.facebook.com/dialog/oauth',
         consumer_key=FACEBOOK_APP_ID,
         consumer_secret=FACEBOOK_APP_SECRET,
-        request_token_params={'scope': 'email'}
+        request_token_params={'scope': 'email,user_events,friends_events'}
         )
 
 #----------------------------------------
@@ -95,6 +96,16 @@ def index(group_alias = None):
         return render_template('welcome.html', group_alias=group_alias)
     else:
         user = get_current_user()
+
+        Event.import_user_facebook_events(user, session['oauth_token'][0])
+        Event.import_friends_facebook_events(user, session['oauth_token'][0])
+
+        # TODO FIXME remove
+        #oauth_token = session['oauth_token'][0]
+        #graph = GraphAPI(oauth_token)
+        #events = graph.get_connections("me", "events", fields='name,description,id,start_time,end_time,location,venue')
+        #return json.dumps(events)
+
         # figure out group stuff
         group = get_group(group_alias)
         if group and group not in user.groups:

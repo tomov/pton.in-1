@@ -621,13 +621,15 @@ def get_app_access_token(app_id, app_secret):
 from flask.ext.sqlalchemy import SQLAlchemy
 from datetime import datetime
 from sqlalchemy import select
-from constants import DatabaseConstants
+from dateutil import parser
 from sqlalchemy.orm import backref
 from sqlalchemy import desc
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy import UniqueConstraint
+
+from constants import DatabaseConstants
 from sendgrid.sendgrid import send_welcome, send_notif
-from util import distance_on_unit_sphere
+from util import distance_on_unit_sphere, facebook_url, datetime_to_mysql_datetime
 
 db = SQLAlchemy()
 
@@ -782,13 +784,13 @@ class Trip(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     start_date = db.Column(db.DateTime)
     end_date = db.Column(db.DateTime)
-    location_name = db.Column(db.String(length = 100))
+    location_name = db.Column(db.String(length = 100, collation = 'utf8_general_ci'))
     location_lat = db.Column(db.Float(precision = 32))
     location_long = db.Column(db.Float(precision = 32))
     looking_for_roomies = db.Column(db.Boolean)
     looking_for_housing = db.Column(db.Boolean)
-    doing_what = db.Column(db.String(length = 250))
-    comment = db.Column(db.String(length = 1000))
+    doing_what = db.Column(db.String(length = 250, collation = 'utf8_general_ci'))
+    comment = db.Column(db.String(length = 1000, collation = 'utf8_general_ci'))
 
     def __init__(self, user_id, start_date = None, end_date = None, location_name = None, location_lat = None, location_long = None):
         self.user_id = user_id
@@ -811,8 +813,8 @@ class Event(db.Model):
     modified = db.Column(db.DateTime)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'))
-    title = db.Column(db.String(length = 100))
-    description = db.Column(db.String(length = 1000))
+    title = db.Column(db.String(length = 100, collation = 'utf8_general_ci'))
+    description = db.Column(db.String(length = 1000, collation = 'utf8_general_ci'))
     url = db.Column(db.String(length = 1000))
     start_date = db.Column(db.DateTime)
     end_date = db.Column(db.DateTime)
@@ -837,6 +839,67 @@ class Event(db.Model):
     def __repr__(self):
         return '<Event %r>' % (self.title)
 
+    @staticmethod
+    def from_facebook_event(user, fb_event):
+        event = Event(user.id)
+        event.title = fb_event.get('name')
+        event.description = fb_event.get('description')
+        event.url = facebook_url('events', fb_event['id'])
+        if 'start_time' in fb_event:
+            event.start_date = datetime_to_mysql_datetime(parser.parse(fb_event.get('start_time')))
+        if 'end_time' in fb_event:
+            event.end_date = datetime_to_mysql_datetime(parser.parse(fb_event.get('end_time')))
+        else:
+            event.end_date = event.start_date
+        event.location_name = fb_event.get('location')
+        if 'venue' in fb_event:
+            # if possible, get lat/long from event
+            print 'GOT FROM VENUE!!!!!'
+            event.location_lat = fb_event['venue'].get('latitude')
+            event.location_long = fb_event['venue'].get('longitude')
+        if not event.location_lat or not event.location_long:
+            # if not, find which trip the user is on during the event and use that information
+            trip = Trip.query.filter(Trip.user_id == user.id, Trip.start_date <= event.start_date, Trip.end_date >= event.start_date).first()
+            print 'GOT FROM TRIP'
+            print 'start --> ' + event.start_date
+            print 'end --> ' + event.end_date
+            if trip:
+                print trip
+                event.location_lat = trip.location_lat
+                event.location_long = trip.location_long
+                if not event.location_name:
+                    event.location_name = trip.location_name
+            else:
+                print '...........NO TRIP :(('
+        return event
+
+    @staticmethod
+    def import_user_facebook_events(user, oauth_token):
+        graph = GraphAPI(oauth_token)
+        fb_events = graph.get_connections(user.fbid, "events", 
+            fields="name,description,id,start_time,end_time,location,venue")
+
+        for fb_event in fb_events['data']:
+            print '----'
+            print fb_event
+            event = Event.from_facebook_event(user, fb_event)
+            if not Event.query.filter_by(url=event.url).first(): # make sure we don't duplicate events
+                db.session.add(event)
+                db.session.commit()
+
+    @staticmethod
+    def import_friends_facebook_events(user, oauth_token):
+        graph = GraphAPI(oauth_token)
+        fb_friends = graph.get_connections("me", "friends")
+        for fb_friend in fb_friends['data']:
+            friend_fbid = fb_friend['id']
+            print fb_friend['id']
+            friend = User.query.filter_by(fbid = friend_fbid).first()
+            if friend:
+                print 'HE\'S ONE OF US!!!'
+                Event.import_user_facebook_events(friend, oauth_token)
+
+
 
 class Meal(db.Model):
     __tablename__ = 'meals'
@@ -845,7 +908,7 @@ class Meal(db.Model):
     modified = db.Column(db.DateTime)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     when = db.Column(db.DateTime)
-    message = db.Column(db.String(length = 1000))
+    message = db.Column(db.String(length = 1000, collation = 'utf8_general_ci'))
     location_name = db.Column(db.String(length = 100))
     location_lat = db.Column(db.Float(precision = 32))
     location_long = db.Column(db.Float(precision = 32))

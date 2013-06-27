@@ -12,6 +12,9 @@ def split_name(name):
 def datetime_to_timestamp(date):
     return time.mktime(date.timetuple())
 
+def datetime_to_mysql_datetime(date):
+    return date.strftime('%Y-%m-%d %H:%M:%S')
+
 def distance_on_unit_sphere(lat1, long1, lat2, long2):
     # Convert latitude and longitude to 
     # spherical coordinates in radians.
@@ -41,3 +44,6 @@ def distance_on_unit_sphere(lat1, long1, lat2, long2):
     # in your favorite set of units to get length.
     earth_radius_miles = 3963.1676
     return arc * earth_radius_miles
+
+def facebook_url(obj_type, obj_fbid):
+    return 'https://www.facebook.com/' + obj_type + '/' + obj_fbid
