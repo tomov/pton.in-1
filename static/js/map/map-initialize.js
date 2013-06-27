@@ -273,7 +273,6 @@ function populate_map_with_meals(meals) {
 }
 
 
-
 function initialize_search_autocomplete(map) {
   var input = document.getElementById('searchTextField');
   var autocomplete = new google.maps.places.Autocomplete(input);
