@@ -22,5 +22,22 @@
     {% include "prompts.html" %}
     <!--{% include "feed.html" %}-->
     {% include "map.html" %}
-    {% include "timeline.html" %}
+    {% include "navbar.html" %}
+    <div id="main-tabs-content" class="tab-content">
+        <div class="tab-pane active" id="timeline-tab">
+            {% include "timeline.html" %}
+        </div>
+        <div class="tab-pane" id="feed-tab">
+            <h1>Feed</h1>
+            <p>here will be the feed</p>
+        </div>
+        <div class="tab-pane" id="stats-tab">
+            <h1>Stats</h1>
+            <p>here we'll have some stats</p>
+        </div>
+        <div class="tab-pane" id="help-tab">
+            <h1>Help</h1>
+            <p>here we will have some help and tips</p>
+        </div>
+    </div>
 {% endblock %}

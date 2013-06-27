@@ -97,8 +97,8 @@ def index(group_alias = None):
     else:
         user = get_current_user()
 
-        Event.import_user_facebook_events(user, session['oauth_token'][0])
-        Event.import_friends_facebook_events(user, session['oauth_token'][0])
+        #Event.import_user_facebook_events(user, session['oauth_token'][0])
+        #Event.import_friends_facebook_events(user, session['oauth_token'][0])
 
         # TODO FIXME remove
         #oauth_token = session['oauth_token'][0]
