@@ -1,3 +1,7 @@
+/*
+Momchil: this was the first version of the feed hovering above the map
+just wanted to save it for later CSS reference
+
 .event-feed {
   position: absolute;
   z-index: 1;
@@ -5,6 +9,7 @@
   margin-right: 30px;
   background-color: #b0c4de;
 }
+*/
 
 body { 
   overflow-x: hidden;

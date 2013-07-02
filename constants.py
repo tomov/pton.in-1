@@ -7,6 +7,9 @@ class DatabaseConstants:
 
 class DatetimeConstants:
     MYSQL_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+    WTFORMS_DATETIME_FORMAT = "%m/%d/%Y %H:%M"
+    WTFORMS_DATE_FORMAT = "%m/%d/%Y"
+    JS_DATE_INITIALIZER_FORMAT = "%Y-%m-%d"
 
 class APIConstants:
     DEFAULT_GET_QUOTES_LIMIT = 30

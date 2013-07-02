@@ -13,7 +13,9 @@ function populate_feed_with_events(events) {
     for (var i = 0; i < events.length; i++) {
         var event_obj = events[i];
         var event_link = "<br /><br /><a href='" + event_obj['url'] + "'>" + 'link' +  "</a>";
+        var location_name = "<br />Location: " + event_obj['location_name'];
         var info_text = event_obj['title'] + " on " + event_obj['start_date_short'] + " at " + event_obj['start_time_short']
+                     + (event_obj['location_name'] ? location_name : "")
                      + "<br /><br />" + event_obj['description']
                      + (event_obj['url'] ? event_link : "")
 

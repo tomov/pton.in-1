@@ -3,16 +3,11 @@
 function initialize_all() {
 	initialize_timeline();
 	initialize_map();
+	initialize_tabs();
 	initialize_feed();
 	get_trips(get_trips_success);
 	get_events(get_events_success);
 	get_meals(get_meals_success);
-
-	// initialize tabs
-    $('#tabs a').click(function (e) {
-        e.preventDefault();
-        $(this).tab('show');
-    });
 }
 
 // timeline visualization

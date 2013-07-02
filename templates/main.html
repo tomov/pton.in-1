@@ -20,16 +20,30 @@
 
 {% block content %}
     {% include "prompts.html" %}
-    <!--{% include "feed.html" %}-->
     {% include "map.html" %}
-    {% include "navbar.html" %}
+
+    <div class="navbar-container" style="margin-top: -42px; margin-bottom: -16px;">
+
+        <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+            <li class="active"><a href="#timeline-tab" data-toggle="tab">Timeline</a></li>
+            <li><a href="#events-tab" data-toggle="tab">Events</a></li>
+            <li><a href="#meals-tab" data-toggle="tab">Meals</a></li>
+            <li><a href="#stats-tab" data-toggle="tab">Stats</a></li>
+            <li><a href="#help-tab" data-toggle="tab">Help</a></li>
+        </ul>
+
+    </div>
+
     <div id="main-tabs-content" class="tab-content">
         <div class="tab-pane active" id="timeline-tab">
             {% include "timeline.html" %}
         </div>
-        <div class="tab-pane" id="feed-tab">
-            <h1>Feed</h1>
-            <p>here will be the feed</p>
+        <div class="tab-pane" id="events-tab">
+            {% include "feed.html" %}
+        </div>
+        <div class="tab-pane" id="meals-tab">
+            <h1>Meals</h1>
+            <p>here will be the meals</p>
         </div>
         <div class="tab-pane" id="stats-tab">
             <h1>Stats</h1>
@@ -40,4 +54,5 @@
             <p>here we will have some help and tips</p>
         </div>
     </div>
+
 {% endblock %}

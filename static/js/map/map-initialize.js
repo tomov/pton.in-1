@@ -9,6 +9,8 @@
 // meal_markers_global               // markers on map for meals
 // meal_info_texts_global                    // info balloons on map for meals
 // map_global                          // the google map object
+// markerclusterer_global             // the marker clusters for the trip markers
+// hidden_map_global                   // dummy hidden map for showing/hiding markerclusterers -- kinda hacky but whatevs
 
 function initialize_map() {
     // init map
@@ -19,8 +21,11 @@ function initialize_map() {
         scrollwheel: false,
         mapTypeId: google.maps.MapTypeId.ROADMAP,
     }
-    var map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
-    map_global = map;
+    map_global = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
+    
+    // this is a hack to be able to show/hide marker clusterers
+    hidden_map_global = new google.maps.Map(document.getElementById("hidden_map_canvas"), mapOptions);
+    MarkerClusterer.prototype.remove = function () {}
 
     // init data points
     trip_info_texts_global = new Array();
@@ -31,11 +36,11 @@ function initialize_map() {
     meal_info_texts_global = new Array();
 
     // other init stuffs
-    initialize_search_autocomplete(map);
+    initialize_search_autocomplete(map_global);
 
     // upadte trips in timeline with those visible on map
-    google.maps.event.addListener(map, 'bounds_changed', function() {
-        var bounds = map.getBounds();
+    google.maps.event.addListener(map_global, 'bounds_changed', function() {
+        var bounds = map_global.getBounds();
         onZoomTimelineUpdate(bounds);
         onZoomFeedUpdate(bounds);
         onZoomMealPromptUpdate(bounds);
@@ -115,7 +120,7 @@ function populate_map_with_trips(trips) {
 
     // markerclusterer -- this makes things pretty
     var mcOptions = {gridSize: 50, maxZoom: 10};
-    var mc = new MarkerClusterer(map, trip_markers_global, mcOptions); 
+    markerclusterer_global = new MarkerClusterer(map, trip_markers_global, mcOptions); 
 }
 
 
@@ -153,7 +158,8 @@ function populate_map_with_events(events) {
         var marker = new google.maps.Marker({
             position: latlng,
             map: map,
-            draggable: is_mine
+            draggable: is_mine,
+            visible: false
         });
 
         event_markers_global.push(marker); // for zoomin/zoom out changes
@@ -232,7 +238,8 @@ function populate_map_with_meals(meals) {
         var marker = new google.maps.Marker({
             position: latlng,
             map: map,
-            draggable: is_mine
+            draggable: is_mine,
+            visible: false
         });
 
         meal_markers_global.push(marker); // for zoomin/zoom out changes

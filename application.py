@@ -281,8 +281,8 @@ def get_trips(group_alias = None):
         trip_dict['location_name'] = trip.location_name
         trip_dict['start_date_short'] = trip.start_date.strftime('%b %d')
         trip_dict['end_date_short'] = trip.end_date.strftime('%b %d')
-        trip_dict['start_date'] = trip.start_date.strftime('%Y-%m-%d')
-        trip_dict['end_date'] = trip.end_date.strftime('%Y-%m-%d')
+        trip_dict['start_date'] = trip.start_date.strftime(DatetimeConstants.JS_DATE_INITIALIZER_FORMAT)
+        trip_dict['end_date'] = trip.end_date.strftime(DatetimeConstants.JS_DATE_INITIALIZER_FORMAT)
         trip_dict['doing_what'] = trip.doing_what
         trip_dict['looking_for_roomies'] = trip.looking_for_roomies
         trip_dict['looking_for_housing'] = trip.looking_for_housing
@@ -294,8 +294,8 @@ def get_trips(group_alias = None):
         trip_dict['user_id'] = trip.user.id
         trip_dict['user_fbid'] = trip.user.fbid
         trip_dict['is_mine'] = (trip.user.id == session.get('user_id', None))
-        trip_dict['start_date_form'] = trip.start_date.strftime('%m/%d/%Y')
-        trip_dict['end_date_form'] = trip.end_date.strftime('%m/%d/%Y')
+        trip_dict['start_date_form'] = trip.start_date.strftime(DatetimeConstants.WTFORMS_DATE_FORMAT)
+        trip_dict['end_date_form'] = trip.end_date.strftime(DatetimeConstants.WTFORMS_DATE_FORMAT)
         result_dict.append(trip_dict)
 
     dump = json.dumps(result_dict)
@@ -412,9 +412,10 @@ def get_events(group_alias = None):
         event_dict['location_name'] = event.location_name
         event_dict['start_date_short'] = event.start_date.strftime('%b %d')
         event_dict['end_date_short'] = event.end_date.strftime('%b %d')
-        event_dict['start_time_short'] = event.start_date.strftime('%H:%M AM/PM')   # TODO FIXME is that the format??????????????
-        event_dict['start_date'] = event.start_date.strftime('%Y-%m-%d')             # FIXME
-        event_dict['end_date'] = event.end_date.strftime('%Y-%m-%d')
+        event_dict['start_time_short'] = event.start_date.strftime('%H:%M')
+        event_dict['end_time_short'] = event.end_date.strftime('%H:%M')
+        event_dict['start_date'] = event.start_date.strftime(DatetimeConstants.JS_DATE_INITIALIZER_FORMAT)
+        event_dict['end_date'] = event.end_date.strftime(DatetimeConstants.JS_DATE_INITIALIZER_FORMAT)
         event_dict['user_name'] = event.user.first_name + ' ' + event.user.last_name
         event_dict['user_first_name'] = event.user.first_name
         event_dict['user_last_name'] = event.user.last_name
@@ -422,8 +423,8 @@ def get_events(group_alias = None):
         event_dict['user_fbid'] = event.user.fbid
         event_dict['group_id'] = event.group_id
         event_dict['is_mine'] = (event.user.id == session.get('user_id', None))
-        event_dict['start_date_form'] = event.start_date.strftime('%m/%d/%Y')   # FIXME
-        event_dict['end_date_form'] = event.end_date.strftime('%m/%d/%Y')
+        event_dict['start_date_form'] = event.start_date.strftime(DatetimeConstants.WTFORMS_DATETIME_FORMAT)   # FIXME
+        event_dict['end_date_form'] = event.end_date.strftime(DatetimeConstants.WTFORMS_DATETIME_FORMAT)
         result_dict.append(event_dict)
 
     dump = json.dumps(result_dict)
@@ -503,8 +504,8 @@ def get_meals(group_alias = None):
         meal_dict['location_long'] = meal.location_long
         meal_dict['location_name'] = meal.location_name
         meal_dict['when_short'] = meal.when.strftime('%b %d') # TODO FIXME format include hour!!!
-        meal_dict['when'] = meal.when.strftime('%Y-%m-%d')  # FIXME same...
-        meal_dict['when_form'] = meal.when.strftime('%m/%d/%Y') # FIXME same
+        meal_dict['when'] = meal.when.strftime(DatetimeConstants.JS_DATE_INITIALIZER_FORMAT)  # FIXME same...
+        meal_dict['when_form'] = meal.when.strftime(DatetimeConstants.WTFORMS_DATETIME_FORMAT) # FIXME same
         meal_dict['user_name'] = meal.user.first_name + ' ' + meal.user.last_name
         meal_dict['user_first_name'] = meal.user.first_name
         meal_dict['user_last_name'] = meal.user.last_name
