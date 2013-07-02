@@ -1,5 +1,5 @@
 from flask.ext.wtf import Form, validators
-from wtforms import TextField, DateField, HiddenField, BooleanField, TextAreaField, IntegerField
+from wtforms import TextField, DateField, HiddenField, BooleanField, TextAreaField, IntegerField, DateTimeField
 from wtforms.widgets import HiddenInput
 from wtforms import ValidationError
 from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
@@ -29,15 +29,15 @@ class NewEventForm(Form):
      location_name = TextField([validators.Required()])
      location_lat = HiddenField([validators.Required()])
      location_long = HiddenField([validators.Required()])
-     start_date = DateField([validators.Required()], format='%m/%d/%Y')
-     end_date = DateField([validators.Required()], format='%m/%d/%Y')
+     start_date = DateTimeField([validators.Required()], format='%m/%d/%Y %H:%M')
+     end_date = DateTimeField([validators.Required()], format='%m/%d/%Y %H:%M')
 
 def all_users():
      return User.query.order_by(User.first_name, User.last_name)
 
 class NewMealForm(Form):
      invitees = QuerySelectMultipleField([validators.Required()], query_factory=all_users)
-     when = DateField([validators.Required()], format='%m/%d/%Y')
+     when = DateTimeField([validators.Required()], format='%m/%d/%Y %H:%M')
      message = TextAreaField([validators.Required()])
      location_name = TextField([validators.Required()])
      location_lat = HiddenField([validators.Required()])

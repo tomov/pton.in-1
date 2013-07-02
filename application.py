@@ -436,8 +436,11 @@ def add_event():
         return format_response('User not logged in', True)
 
     event = Event(session.get('user_id'))
+    print 'ADD EVENT'
     form = NewEventForm(obj=event, secret_key=os.environ[SECRET_KEY])
     if form.validate_on_submit():
+        print event.start_date
+        print '-------------------------'
         form.populate_obj(event)
         db.session.add(event)
         db.session.commit()

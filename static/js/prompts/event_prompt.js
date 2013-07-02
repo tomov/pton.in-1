@@ -111,25 +111,43 @@ $(function() {
         delete_event(event_id_global, deleteEventSuccess);
     });
 
-    $( "#event_start_date" ).datepicker({
-      defaultDate: "+1w",
-      changeMonth: true,
-      changeYear: true,
-      numberOfMonths: 1,
-      onClose: function( selectedDate ) {
-        $( "#event_end_date" ).datepicker( "option", "minDate", selectedDate );
-      }
-    });
 
-    $( "#event_end_date" ).datepicker({
-      defaultDate: "+1w",
-      changeMonth: true,
-      changeYear: true,
-      numberOfMonths: 1,
-      onClose: function( selectedDate ) { 
-        $( "#event_start_date" ).datepicker( "option", "maxDate", selectedDate );
-      } 
+    var startDateTextBox = $('#event_start_date');
+    var endDateTextBox = $('#event_end_date');
+
+    startDateTextBox.datetimepicker({ 
+        onClose: function(dateText, inst) {
+            if (endDateTextBox.val() != '') {
+                var testStartDate = startDateTextBox.datetimepicker('getDate');
+                var testEndDate = endDateTextBox.datetimepicker('getDate');
+                if (testStartDate > testEndDate)
+                    endDateTextBox.datetimepicker('setDate', testStartDate);
+            }
+            else {
+                endDateTextBox.val(dateText);
+            }
+        },
+        onSelect: function (selectedDateTime){
+            endDateTextBox.datetimepicker('option', 'minDate', startDateTextBox.datetimepicker('getDate') );
+        }
     });
+    endDateTextBox.datetimepicker({ 
+        onClose: function(dateText, inst) {
+            if (startDateTextBox.val() != '') {
+                var testStartDate = startDateTextBox.datetimepicker('getDate');
+                var testEndDate = endDateTextBox.datetimepicker('getDate');
+                if (testStartDate > testEndDate)
+                    startDateTextBox.datetimepicker('setDate', testEndDate);
+            }
+            else {
+                startDateTextBox.val(dateText);
+            }
+        },
+        onSelect: function (selectedDateTime){
+            startDateTextBox.datetimepicker('option', 'maxDate', endDateTextBox.datetimepicker('getDate') );
+        }
+    });
+    
   }
 });
 
