@@ -87,12 +87,7 @@ $(function() {
         delete_meal(meal_id_global, deleteMealSuccess);
     });
 
-    $( "#meal_when" ).datepicker({
-      defaultDate: "+1w",
-      changeMonth: true,
-      changeYear: true,
-      numberOfMonths: 1
-    });
+    $( "#meal_when" ).datetimepicker();
 
     // SOOO ghetto... lolz
     meal_invitees_all_options_global = $('#meal_invitees > option').clone();
