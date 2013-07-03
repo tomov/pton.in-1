@@ -97,8 +97,8 @@ def index(group_alias = None):
     else:
         user = get_current_user()
 
-        #Event.import_user_facebook_events(user, session['oauth_token'][0])
-        #Event.import_friends_facebook_events(user, session['oauth_token'][0])
+        Event.import_user_facebook_events(user, session['oauth_token'][0])
+        Event.import_friends_facebook_events(user, session['oauth_token'][0])
 
         # TODO FIXME remove
         #oauth_token = session['oauth_token'][0]
@@ -192,6 +192,15 @@ def my_groups():
 #----------------------------------------
 # facebook oauth stuff
 #----------------------------------------
+
+def get_pton_info(me):
+    pton_info = {}
+    PTON_SCHOOL_FBID = '18058830773'
+    if 'education' in me.data:
+        for school_d in me.data['education']:
+            if school_d['school']['id'] == PTON_SCHOOL_FBID:
+                pton_info = school_d
+    return pton_info
 
 @app.route('/login/authorized')
 @facebook.authorized_handler
