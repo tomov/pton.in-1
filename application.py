@@ -512,6 +512,9 @@ def get_meals(group_alias = None):
         meal_dict['user_email'] = meal.user.email
         meal_dict['user_fbid'] = meal.user.fbid
         meal_dict['is_mine'] = (meal.user.id == session.get('user_id', None))
+        meal_dict['invitees'] = []
+        for invitee in meal.invitees:
+            meal_dict['invitees'].append(invitee.first_name + ' ' + invitee.last_name)
         result_dict.append(meal_dict)
 
     dump = json.dumps(result_dict)

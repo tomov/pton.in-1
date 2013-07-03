@@ -1,6 +1,6 @@
 // when we zoom the map, the feed shows only the events that are visible on the map
 function onZoomFeedUpdate(bounds) {
-    if (typeof event_markers_global === 'undefined') {
+    if (typeof event_markers_global === 'undefined' || typeof meals_data_global === 'undefined') {
         // onZoomTimelineUpdate sometimes gets called before the timeline / map has loaded
         return;
     }

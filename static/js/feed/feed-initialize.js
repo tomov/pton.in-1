@@ -22,18 +22,24 @@ function populate_feed_with_events(events) {
         feed_new_html += '<tr><td>' + info_text + '</td></tr>';
     }
 
-    $('#feed tr').first().after(feed_new_html); 
+    $('#events-feed tr').first().after(feed_new_html); 
 }
 
 function populate_feed_with_meals(meals) {
     var feed_new_html = '';
     for (var i = 0; i < meals.length; i++) {
         var meal_obj = meals[i];
-        var info_text = "Meal with " + meal_obj['user_first_name'] + " on " + meal_obj['when_short']
+        var invitees = 'Invitees: ';
+        for (var j = 0; j < meal_obj['invitees'].length; j++) {
+            invitees += meal_obj['invitees'][j] + ', ';
+        }
+        var info_text = "Meal invitation by " + meal_obj['user_first_name'] + " on " + meal_obj['when_short']
+                     + "<br />" + invitees
                      + "<br /><br />" + meal_obj['message'];
+                     + "<br /><br /> <a>I can make it!</a> | <a>Sorry I'm busy</a>"
 
         feed_new_html += '<tr><td>' + info_text + '</td></tr>';
     }
 
-    $('#feed tr').first().after(feed_new_html);
+    $('#meals-feed tr').first().after(feed_new_html);
 }
