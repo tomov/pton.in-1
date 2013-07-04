@@ -25,8 +25,10 @@ from util import *
 SECRET_KEY = 'PARAM1'  # SECRET_KEY
 FACEBOOK_APP_ID = 'PARAM2'   # FACEBOOK_APP_ID
 FACEBOOK_APP_SECRET = 'PARAM3'  # FACEBOOK_APP_SECRET
-SENDGRID_USERNAME = 'PARAM4' # SENDGRID_USERNAME
-SENDGRID_PASSWORD = 'PARAM5' # SENDGRID_PASSWORD
+FACEBOOK_APP_TOKEN = 'PARAM4' # FACEBOOK_APP_TOKEN -- generated custom for each app
+# TODO FIXME these are retired
+#SENDGRID_USERNAME = 'PARAM4' # SENDGRID_USERNAME
+#SENDGRID_PASSWORD = 'PARAM5' # SENDGRID_PASSWORD
 
 #----------------------------------------
 # initialization
@@ -51,7 +53,6 @@ db.init_app(app)
 app.secret_key = os.environ[SECRET_KEY]
 oauth = OAuth()
 
-FACEBOOK_APP_TOKEN = '424151197676870|Zi_uWdRV41k3qnuWQ2IXQ-xoj9c'  # TODO FIXME put this into a parameter like the others
 FACEBOOK_APP_ID = os.environ[FACEBOOK_APP_ID]
 FACEBOOK_APP_SECRET = os.environ[FACEBOOK_APP_SECRET]
 facebook = oauth.remote_app('facebook',
@@ -272,6 +273,9 @@ def get_facebook_oauth_token():
 #----------------------------------------
 # api helpers
 #---------------------------------------- 
+
+def json_response(ret):
+    return json.dumps(ret)
 
 def format_response(msg=None, error=False):
     if msg is None:
@@ -617,7 +621,8 @@ def add_fbgroup():
         print fbgroup.privacy
         print len(fbgroup.invitees.all())
         # add fbgroup on fb
-        oauth_token = FACEBOOK_APP_TOKEN
+        oauth_token = os.environ[FACEBOOK_APP_TOKEN]
+        print oauth_token
         graph = GraphAPI(oauth_token)
         user = get_current_user()
         result = graph.put_object(FACEBOOK_APP_ID, 'groups',
@@ -635,7 +640,7 @@ def add_fbgroup():
                 graph.put_object(fbgroup.fbid, 'members' + '/' + invitee.fbid)
             db.session.add(fbgroup)
             db.session.commit()
-            return format_response('SUCCESS!')
+            return json_response({'fbid': fbgroup.fbid})
 
     return format_response('Could not add fb group for some reason...', True) 
 

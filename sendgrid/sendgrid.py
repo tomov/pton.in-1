@@ -5,7 +5,7 @@ from email.mime.text import MIMEText
 
 from_email = "princeton.in.blank@gmail.com"
 
-# code duplication with application.py... TODO
+# TODO FIXME these are retired....
 SENDGRID_USERNAME = 'PARAM4' # SENDGRID_USERNAME
 SENDGRID_PASSWORD = 'PARAM5' # SENDGRID_PASSWORD
 

@@ -74,7 +74,8 @@ $(function() {
 
 function addFbgroupSuccess(data, textStatus, jqXHR) {
     hideFbgroupPrompt();
-    location.reload();  // TODO Like mplungjan explained in the comment below, the reload() function takes an optional parameter that can be set to true to reload from the server rather than the cache. The parameter defaults to false, so by default the page reloads from the browser's cache. --- TEST IN REAL LIFE IN OTHER BROWSERS, OTHER USERS ETC ... also just remove altogether and add trip intelligently to timetable
+    fbgroup_fbid = data['fbid'];
+    window.location = 'https://www.facebook.com/groups/' + fbgroup_fbid;  // TODO FIXME hardcoded link
 }
 
 function onZoomFbgroupPromptUpdate(bounds) {
