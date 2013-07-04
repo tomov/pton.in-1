@@ -611,6 +611,7 @@ def add_fbgroup():
     form = NewFbgroupForm(obj=fbgroup, secret_key=os.environ[SECRET_KEY])
     if form.validate_on_submit():
         form.populate_obj(fbgroup)
+        # TODO remove the print statements
         print fbgroup.name
         print fbgroup.description
         print fbgroup.privacy
