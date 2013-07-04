@@ -12,7 +12,8 @@ function onZoomFeedUpdate(bounds) {
         }
     }
 
-    clear_feed();
+    clear_events_feed();
     populate_feed_with_events(visible_events);
+    clear_meals_feed();
     populate_feed_with_meals(meals_data_global); // TODO FIXME
 }

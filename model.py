@@ -638,6 +638,11 @@ users_groups_table = db.Table('users_groups',
     db.Column('group_id', db.Integer, db.ForeignKey('groups.id'))
 )
 
+users_fbgroups_table = db.Table('users_fbgroups',
+    db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
+    db.Column('fbgroup_id', db.Integer, db.ForeignKey('fbgroups.id'))
+)
+
 users_meals_table = db.Table('users_meals',
     db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
     db.Column('meal_id', db.Integer, db.ForeignKey('meals.id')),
@@ -663,6 +668,8 @@ class User(db.Model):
     groups = db.relationship('Group', secondary = users_groups_table, backref = 'users')
     meals_suggested = db.relationship('Meal', backref = 'user')
     meals = db.relationship('Meal', secondary = users_meals_table, backref = backref('invitees', lazy='dynamic'))
+    fbgroups_owned = db.relationship('Fbgroup', backref = 'user')
+    fbgroups = db.relationship('Fbgroup', secondary = users_fbgroups_table, backref = backref('invitees', lazy='dynamic'))
 
     def __init__(self, fbid, email = None, first_name = None, last_name = None, class_year = None, major = None):
         self.fbid = fbid
@@ -928,6 +935,29 @@ class Meal(db.Model):
     def __repr__(self):
         return '<Meal %r>' % (self.message)
 
+
+class Fbgroup(db.Model):
+    __tablename__ = 'fbgroups'
+    id = db.Column(db.Integer, primary_key = True)
+    created = db.Column(db.DateTime)
+    modified = db.Column(db.DateTime)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    name = db.Column(db.String(length = 100, collation = 'utf8_general_ci'))
+    description = db.Column(db.String(length = 1000, collation = 'utf8_general_ci'))
+    privacy = db.Column(db.String(length = 50))
+    fbid = db.Column(db.String(length = 50))
+
+    def __init__(self, user_id, name = None, description = None, privacy = None, fbid = None):
+        self.user_id = user_id
+        self.name = name
+        self.description = description
+        self.privacy = privacy
+        self.fbid = fbid
+        self.created = datetime.utcnow()
+        self.modified = self.created
+
+    def __repr__(self):
+        return '<Fbgroup %r>' % (self.name)
 
 # call this somewhere in application.py/home, run and open home page
 # then check if db is created and then remove it

@@ -1,5 +1,5 @@
 from flask.ext.wtf import Form, validators
-from wtforms import TextField, DateField, HiddenField, BooleanField, TextAreaField, IntegerField, DateTimeField
+from wtforms import TextField, DateField, HiddenField, BooleanField, TextAreaField, IntegerField, DateTimeField, SelectField
 from wtforms.widgets import HiddenInput
 from wtforms import ValidationError
 from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
@@ -44,3 +44,8 @@ class NewMealForm(Form):
      location_lat = HiddenField([validators.Required()])
      location_long = HiddenField([validators.Required()])
 
+class NewFbgroupForm(Form):
+     invitees = QuerySelectMultipleField([validators.Required()], query_factory=all_users)
+     name = TextField([validators.Required()])
+     description = TextAreaField([validators.Required()])
+     privacy = SelectField(choices=[('closed', 'Closed'), ('open', 'Open'), ('secret', 'Secret')])

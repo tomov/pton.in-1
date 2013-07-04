@@ -16,6 +16,7 @@
     get_trips_url_global = "{{ url_for('get_trips', group_alias=group_alias) }}";
     get_events_url_global = "{{ url_for('get_events', group_alias=group_alias) }}";
     get_meals_url_global = "{{ url_for('get_meals', group_alias=group_alias) }}";
+    group_name_global = "{{ group.name if group else '' }}";
 {% endblock %}
 
 {% block content %}

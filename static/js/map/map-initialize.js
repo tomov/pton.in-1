@@ -11,6 +11,7 @@
 // map_global                          // the google map object
 // markerclusterer_global             // the marker clusters for the trip markers
 // hidden_map_global                   // dummy hidden map for showing/hiding markerclusterers -- kinda hacky but whatevs
+// geocoder_global                    // for reverse geocoding (getting name of city from coordinates)
 
 function initialize_map() {
     // init map
@@ -44,7 +45,11 @@ function initialize_map() {
         onZoomTimelineUpdate(bounds);
         onZoomFeedUpdate(bounds);
         onZoomMealPromptUpdate(bounds);
+        onZoomFbgroupPromptUpdate(bounds);
     });
+
+    // init geocoder
+    geocoder_global = new google.maps.Geocoder();
 }
 
 function populate_map_with_trips(trips) {

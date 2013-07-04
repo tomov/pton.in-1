@@ -1,11 +1,19 @@
 // initialize the feed
 
-function initialize_feed() {
-    clear_feed();
+function initialize_events_feed() {
+    clear_events_feed();
 }
 
-function clear_feed() {
-    $('#feed tr').not(':first').remove();
+function initialize_meals_feed() {
+    clear_meals_feed();
+}
+
+function clear_events_feed() {
+    $('#events-feed tr').not(':first').remove();
+}
+
+function clear_meals_feed() {
+    $('#meals-feed tr').not(':first').remove();  
 }
 
 function populate_feed_with_events(events) {

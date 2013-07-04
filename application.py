@@ -5,11 +5,13 @@ import json
 import pprint
 from datetime import datetime
 from wtforms.ext.sqlalchemy.orm import model_form
+import urllib2
+import urllib
 
-from forms import NewTripForm, NewEventForm, NewMealForm
+from forms import NewTripForm, NewEventForm, NewMealForm, NewFbgroupForm
 import model
 from model import db
-from model import User, Trip, Group, Alias, Event, Meal
+from model import User, Trip, Group, Alias, Event, Meal, Fbgroup
 from model import create_db
 from model import GraphAPI
 from constants import *
@@ -49,6 +51,7 @@ db.init_app(app)
 app.secret_key = os.environ[SECRET_KEY]
 oauth = OAuth()
 
+FACEBOOK_APP_TOKEN = '424151197676870|Zi_uWdRV41k3qnuWQ2IXQ-xoj9c'  # TODO FIXME put this into a parameter like the others
 FACEBOOK_APP_ID = os.environ[FACEBOOK_APP_ID]
 FACEBOOK_APP_SECRET = os.environ[FACEBOOK_APP_SECRET]
 facebook = oauth.remote_app('facebook',
@@ -58,7 +61,7 @@ facebook = oauth.remote_app('facebook',
         authorize_url='https://www.facebook.com/dialog/oauth',
         consumer_key=FACEBOOK_APP_ID,
         consumer_secret=FACEBOOK_APP_SECRET,
-        request_token_params={'scope': 'email,user_events,friends_events'}
+        request_token_params={'scope': 'email,user_events,friends_events,user_groups'}
         )
 
 #----------------------------------------
@@ -121,10 +124,15 @@ def index(group_alias = None):
         event_form = NewEventForm(obj=event, secret_key=os.environ[SECRET_KEY])
         meal = Meal(user.id)
         meal_form = NewMealForm(obj=meal, secret_key=os.environ[SECRET_KEY])
+        fbgroup = Fbgroup(user.id)
+        fbgroup_form = NewFbgroupForm(obj=fbgroup, secret_key=os.environ[SECRET_KEY])
         # see if we need to ask user to add trip
         trip_count = Trip.query.filter_by(user_id=user.id).count()
         show_prompt = (trip_count == 0)
-        return render_template('main.html', group_alias=group_alias, group=group, trip_form=trip_form, event_form=event_form, meal_form=meal_form, show_prompt=show_prompt)
+        return render_template('main.html', 
+            group_alias=group_alias, group=group, 
+            trip_form=trip_form, event_form=event_form, meal_form=meal_form, fbgroup_form=fbgroup_form,
+            show_prompt=show_prompt)
 
 @app.route("/<group_alias>/login")
 @app.route("/login")
@@ -178,8 +186,6 @@ def join_group(group_id):
         return redirect(next_url)
     return redirect(url_for("index"))
 
-
-
 @app.route('/my_groups')
 def my_groups():
     if not session.get('logged_in'):
@@ -192,6 +198,23 @@ def my_groups():
 #----------------------------------------
 # facebook oauth stuff
 #----------------------------------------
+
+# according to Facebook (https://developers.facebook.com/docs/opengraph/howtos/publishing-with-app-token/)
+# we should only get the app access token (which is different from the user access token)
+# once -- it's tied to the app secret, so long as the app secret is the same, this should also be the same
+def get_app_access_token():
+    data = {
+        'client_id': FACEBOOK_APP_ID,
+        'client_secret': FACEBOOK_APP_SECRET,
+        'grant_type': 'client_credentials'
+    }
+    url_values = urllib.urlencode(data)
+    print url_values  # The order may differ. 
+    url = 'https://graph.facebook.com/oauth/access_token'
+    full_url = url + '?' + url_values
+    print full_url
+    response = urllib2.urlopen(full_url)
+    return response.read()
 
 def get_pton_info(me):
     pton_info = {}
@@ -575,6 +598,45 @@ def delete_meal(meal_id):
     db.session.delete(meal)
     db.session.commit()
     return format_response('SUCCESS!')
+
+
+##################### fb groups #############################
+
+@app.route("/add_fbgroup", methods=['POST'])
+def add_fbgroup():
+    if not session.get('logged_in'):
+        return format_response('User not logged in', True)
+
+    fbgroup = Fbgroup(session.get('user_id'))
+    form = NewFbgroupForm(obj=fbgroup, secret_key=os.environ[SECRET_KEY])
+    if form.validate_on_submit():
+        form.populate_obj(fbgroup)
+        print fbgroup.name
+        print fbgroup.description
+        print fbgroup.privacy
+        print len(fbgroup.invitees.all())
+        # add fbgroup on fb
+        oauth_token = FACEBOOK_APP_TOKEN
+        graph = GraphAPI(oauth_token)
+        user = get_current_user()
+        result = graph.put_object(FACEBOOK_APP_ID, 'groups',
+            name=fbgroup.name,
+            description=fbgroup.description,
+            privacy=fbgroup.privacy,
+            admin=user.fbid
+        )
+        print result
+        if result:
+            fbgroup.fbid = result['id']
+            for invitee in fbgroup.invitees:
+                print invitee
+                print invitee.fbid
+                graph.put_object(fbgroup.fbid, 'members' + '/' + invitee.fbid)
+            db.session.add(fbgroup)
+            db.session.commit()
+            return format_response('SUCCESS!')
+
+    return format_response('Could not add fb group for some reason...', True) 
 
 #----------------------------------------
 # launch

@@ -87,6 +87,10 @@ $(function() {
         delete_meal(meal_id_global, deleteMealSuccess);
     });
 
+    $('#select-all-meal-invitees').click(function() {
+        $('#meal_invitees option').prop('selected', 'selected');
+    });
+
     $( "#meal_when" ).datetimepicker();
 
     // SOOO ghetto... lolz

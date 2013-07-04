@@ -69,6 +69,7 @@
   <h3 class="sub">You can invite up to 10 people. They will receive an e-mail invitation.</h3>
     <form id='meal_form'>
       {{ meal_form.csrf_token(id='meal_csrf_token') }}
+      <a id='select-all-meal-invitees' href='#'>select all</a><br />
       {{ meal_form.invitees(placeholder='Invitees', id='meal_invitees')  }}<br />
       {{ meal_form.when(placeholder='When', id='meal_when')  }}<br />
       {{ meal_form.location_name(placeholder='Where', id='meal_location_name') }}<br />
@@ -84,6 +85,29 @@
       </div>
 
       <a id="hide-meal-link" class="hide-link" href="#">hide</a>
+    </div>
+  </center>
+  </div>
+</div>
+
+
+
+<div id="fbgroup_prompt"  style="position:absolute;width:100%;" hidden>
+  <div class="populate">
+  <center>
+  <h1>(BETA!) Create a Facebook Group with people on the map!</h1>
+  <h3 class="sub">Great for group chat, announcements, and everything else. They will receive an invitation through Pton.in</h3>
+    <form id='fbgroup_form'>
+      {{ fbgroup_form.csrf_token(id='fbgroup_csrf_token') }}
+      <a id='select-all-fbgroup-invitees' href='#'>select all</a><br />
+      {{ fbgroup_form.invitees(placeholder='Invitees', id='fbgroup_invitees')  }}<br />
+      {{ fbgroup_form.name(placeholder='Name', id='fbgroup_name')  }}<br />
+      {{ fbgroup_form.description(placeholder='Description', id='fbgroup_description') }}<br />
+      {{ fbgroup_form.privacy(placeholder='Privacy', id='fbgroup_privacy') }}
+    </form>
+    <div>
+      <input class="btn" id='add-fbgroup-button' type="submit" value="Create Facebook Group">
+      <a id="hide-fbgroup-link" class="hide-link" href="#">hide</a>
     </div>
   </center>
   </div>
