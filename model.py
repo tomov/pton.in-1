@@ -633,6 +633,12 @@ from util import distance_on_unit_sphere, facebook_url, datetime_to_mysql_dateti
 
 db = SQLAlchemy()
 
+users_events_table = db.Table('users_events',
+    db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
+    db.Column('events_id', db.Integer, db.ForeignKey('events.id')),
+    db.Column('response', db.Enum('yes', 'maybe', 'no'))
+)
+
 users_groups_table = db.Table('users_groups',
     db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
     db.Column('group_id', db.Integer, db.ForeignKey('groups.id'))
@@ -663,13 +669,14 @@ class User(db.Model):
     class_year = db.Column(db.Integer)
     major = db.Column(db.String(length = 50))
     trips = db.relationship('Trip', backref = 'user')
+    events = association_proxy('user_rsvps', 'event')
     events_owned = db.relationship('Event', backref = 'user')
-    groups_owned = db.relationship('Group', backref = 'user')
     groups = db.relationship('Group', secondary = users_groups_table, backref = 'users')
-    meals_suggested = db.relationship('Meal', backref = 'user')
+    groups_owned = db.relationship('Group', backref = 'user')
     meals = db.relationship('Meal', secondary = users_meals_table, backref = backref('invitees', lazy='dynamic'))
-    fbgroups_owned = db.relationship('Fbgroup', backref = 'user')
+    meals_suggested = db.relationship('Meal', backref = 'user')
     fbgroups = db.relationship('Fbgroup', secondary = users_fbgroups_table, backref = backref('invitees', lazy='dynamic'))
+    fbgroups_owned = db.relationship('Fbgroup', backref = 'user')
 
     def __init__(self, fbid, email = None, first_name = None, last_name = None, class_year = None, major = None):
         self.fbid = fbid
@@ -828,6 +835,7 @@ class Event(db.Model):
     location_name = db.Column(db.String(length = 100))
     location_lat = db.Column(db.Float(precision = 32))
     location_long = db.Column(db.Float(precision = 32))
+    users = association_proxy('event_rsvps', 'user')
 
     def __init__(self, user_id, group_id = None, title = None, description = None, url = None, start_date = None, end_date = None, location_name = None, location_lat = None, location_long = None):
         self.user_id = user_id
@@ -848,6 +856,7 @@ class Event(db.Model):
 
     @staticmethod
     def from_facebook_event(user, fb_event):
+        # derive event object
         event = Event(user.id)
         event.title = fb_event.get('name')
         event.description = fb_event.get('description')
@@ -859,6 +868,7 @@ class Event(db.Model):
         else:
             event.end_date = event.start_date
         event.location_name = fb_event.get('location')
+        # figure out venue name
         if 'venue' in fb_event:
             # if possible, get lat/long from event
             print 'GOT FROM VENUE!!!!!'
@@ -907,6 +917,29 @@ class Event(db.Model):
                 Event.import_user_facebook_events(friend, oauth_token)
 
 
+class Rsvp(db.Model):
+    __tablename__ = 'rsvps'
+    id = db.Column(db.Integer, primary_key = True)
+    created = db.Column(db.DateTime)
+    modified = db.Column(db.DateTime)
+    event_id = db.Column(db.Integer, db.ForeignKey('events.id'), primary_key = True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key = True)
+    status = db.Column(db.Enum('yes', 'maybe', 'no'))
+    event = db.relationship("Event",
+        backref = backref("event_rsvps", cascade="all, delete-orphan"))
+    user = db.relationship("User", 
+        backref = backref("user_rsvps", cascade="all, delete-orphan"))
+    __table_args__ = (UniqueConstraint('event_id', 'user_id', name='unique-user-event-pair'), )
+
+    def __init__(self, user_id, event_id):
+        self.user_id = user_id
+        self.event_id = event_id
+        self.status = 'no'
+        self.created = datetime.utcnow()
+        self.modified = self.created
+
+    def __repr__(self):
+        return '<Rsvp [Event %r] [User %r]>' % (self.event.id, self.user.id)
 
 class Meal(db.Model):
     __tablename__ = 'meals'

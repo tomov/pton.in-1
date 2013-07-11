@@ -3,7 +3,7 @@ from flask import Flask, request, render_template, send_from_directory, Response
 from flask_oauth import OAuth
 import json
 import pprint
-from datetime import datetime
+from datetime import datetime, timedelta
 from wtforms.ext.sqlalchemy.orm import model_form
 import urllib2
 import urllib
@@ -11,7 +11,7 @@ import urllib
 from forms import NewTripForm, NewEventForm, NewMealForm, NewFbgroupForm
 import model
 from model import db
-from model import User, Trip, Group, Alias, Event, Meal, Fbgroup
+from model import User, Trip, Group, Alias, Event, Meal, Fbgroup, Rsvp
 from model import create_db
 from model import GraphAPI
 from constants import *
@@ -62,7 +62,7 @@ facebook = oauth.remote_app('facebook',
         authorize_url='https://www.facebook.com/dialog/oauth',
         consumer_key=FACEBOOK_APP_ID,
         consumer_secret=FACEBOOK_APP_SECRET,
-        request_token_params={'scope': 'email,user_events,friends_events,user_groups'}
+        request_token_params={'scope': 'email,user_events,user_groups'}
         )
 
 #----------------------------------------
@@ -100,7 +100,7 @@ def index(group_alias = None):
         return render_template('welcome.html', group_alias=group_alias)
     else:
         user = get_current_user()
-
+        create_db()
         #Event.import_user_facebook_events(user, session['oauth_token'][0])
         #Event.import_friends_facebook_events(user, session['oauth_token'][0])
 
@@ -234,11 +234,13 @@ def facebook_authorized(resp):
                 request.args['error_reason'],
                 request.args['error_description']
                 )
+    # get user and token
     session['oauth_token'] = (resp['access_token'], '')
     me = facebook.get('/me')
     u = User.query.filter_by(fbid=me.data['id']).first()
     group_alias = request.args.get('group_alias')
 
+    # see if user is new
     user_is_new = False
     if not u:
         pton_info = get_pton_info(me)
@@ -249,10 +251,14 @@ def facebook_authorized(resp):
             return "Access denied. If you're a Princeton student, \
                 connect your Princeton email to Facebook."
 
+    # set session variables
     session['user_id'] = u.id
     session['user_first_name'] = u.first_name
     session['user_last_name'] = u.last_name
     session['logged_in'] = True
+
+    # import user events
+    Event.import_user_facebook_events(user, session['oauth_token'][0])
 
     if user_is_new:
         # here we show the prompt
@@ -426,15 +432,15 @@ def get_events(group_alias = None):
         return format_response('User not logged in', True)
 
     group = get_group(group_alias)
-    # TODO FIXME filter only events in the future!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    now = str(datetime.now()-timedelta(days=1))
     if group:
-        events = Event.query.filter_by(group_id=group.id)
+        events = Event.query.filter(Event.group_id==group.id, Event.end_date >= now).order_by(Event.start_date).all()
     else:
         if group_alias == 'me':
             # the "me" page -- this is kind of hacky... maybe find a better way? also see get_group
-            events = Event.query.filter_by(user_id=session.get('user_id'))
+            events = Event.query.filter(Event.user_id==session.get('user_id'), Event.end_date >= now).order_by(Event.start_date).all()
         else:
-            events = Event.query.all()
+            events = Event.query.filter(Event.end_date >= now).order_by(Event.start_date).all()
 
     result_dict = []
     for event in events:
@@ -461,6 +467,12 @@ def get_events(group_alias = None):
         event_dict['is_mine'] = (event.user.id == session.get('user_id', None))
         event_dict['start_date_form'] = event.start_date.strftime(DatetimeConstants.WTFORMS_DATETIME_FORMAT)   # FIXME
         event_dict['end_date_form'] = event.end_date.strftime(DatetimeConstants.WTFORMS_DATETIME_FORMAT)
+        rsvp = Rsvp.query.filter_by(user_id=session.get('user_id'), event_id=event.id).first()
+        if rsvp:
+            rsvp_status = rsvp.rsvp_status
+        else:
+            rsvp_status = 'no'
+        event_dict['rsvp_status'] = rsvp_status
         result_dict.append(event_dict)
 
     dump = json.dumps(result_dict)
@@ -510,6 +522,24 @@ def delete_event(event_id):
         return format_response('Event does not belong to logged in user', True)
 
     db.session.delete(event)
+    db.session.commit()
+    return format_response('SUCCESS!')
+
+@app.route("/set_event_rsvp/<event_id>/<rsvp_status>", methods = ['GET'])
+def set_event_rsvp(event_id, rsvp_status):
+    if not session.get('logged_in'):
+        return format_response('User not logged in', True)
+    event = Event.query.filter_by(id=event_id).first()
+    if not event:
+        return format_response('No event with given id', True)
+
+    rsvp = Rsvp.query.filter_by(user_id=session.get('user_id'), event_id=event.id).first()
+    if rsvp:
+        rsvp.status = rsvp_status
+    else:
+        rsvp = Rsvp(session.get('user_id'), event.id)
+        rsvp.status = rsvp_status
+        db.session.add(rsvp)
     db.session.commit()
     return format_response('SUCCESS!')
 

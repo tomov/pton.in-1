@@ -20,12 +20,19 @@ function populate_feed_with_events(events) {
     var feed_new_html = '';
     for (var i = 0; i < events.length; i++) {
         var event_obj = events[i];
-        var event_link = "<br /><br /><a href='" + event_obj['url'] + "'>" + 'link' +  "</a>";
+        var event_title = (event_obj['url'] ? "<a href='" + event_obj['url'] + "'>" + event_obj['title'] +  "</a>" : event_obj['title']);
         var location_name = "<br />Location: " + event_obj['location_name'];
-        var info_text = event_obj['title'] + " on " + event_obj['start_date_short'] + " at " + event_obj['start_time_short']
+        var radio_buttons = "<br /><br />" 
+                          + "<input type='radio' name='rsvp_status_" + event_obj['id'] + "' value='yes' onclick=\"set_event_rsvp(" + event_obj['id'] + ", 'yes', null);\" " + (event_obj['rsvp_status'] == 'yes' ? 'checked' : '') + "/> Going "
+                          + "<input type='radio' name='rsvp_status_" + event_obj['id'] + "' value='maybe' onclick=\"set_event_rsvp(" + event_obj['id'] + ", 'maybe', null);\" " + (event_obj['rsvp_status'] == 'maybe' ? 'checked' : '') + "/> Just remind me "
+                          + "<input type='radio' name='rsvp_status_" + event_obj['id'] + "' value='no' onclick=\"set_event_rsvp(" + event_obj['id'] + ", 'no', null);\" " + (event_obj['rsvp_status'] == 'no' ? 'checked' : '') + "/> Not going ";
+        // TODO FIXME (coupling) -- assumes events_data_global == events
+        edit_link = (event_obj['is_mine'] ? " <a href='#' onclick='populateEventFormFromData(events_data_global, " + i.toString() + "); showEditEventPrompt();'>[edit]</a>" : "");
+        var info_text = event_title + " on " + event_obj['start_date_short'] + " at " + event_obj['start_time_short']
+                     + edit_link
                      + (event_obj['location_name'] ? location_name : "")
                      + "<br /><br />" + event_obj['description']
-                     + (event_obj['url'] ? event_link : "")
+                     + radio_buttons;
 
         feed_new_html += '<tr><td>' + info_text + '</td></tr>';
     }

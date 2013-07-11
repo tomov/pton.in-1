@@ -2,6 +2,7 @@
 *.swp
 venv
 *~
+.~*
 .DS_Store
 .elasticbeanstalk/
 mysql*
