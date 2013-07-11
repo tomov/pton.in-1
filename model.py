@@ -633,12 +633,6 @@ from util import distance_on_unit_sphere, facebook_url, datetime_to_mysql_dateti
 
 db = SQLAlchemy()
 
-users_events_table = db.Table('users_events',
-    db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
-    db.Column('events_id', db.Integer, db.ForeignKey('events.id')),
-    db.Column('response', db.Enum('yes', 'maybe', 'no'))
-)
-
 users_groups_table = db.Table('users_groups',
     db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
     db.Column('group_id', db.Integer, db.ForeignKey('groups.id'))
@@ -647,13 +641,6 @@ users_groups_table = db.Table('users_groups',
 users_fbgroups_table = db.Table('users_fbgroups',
     db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
     db.Column('fbgroup_id', db.Integer, db.ForeignKey('fbgroups.id'))
-)
-
-users_meals_table = db.Table('users_meals',
-    db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
-    db.Column('meal_id', db.Integer, db.ForeignKey('meals.id')),
-    db.Column('confirmed', db.Boolean),
-    db.Column('message', db.String(length = 250))
 )
 
 class User(db.Model):
@@ -673,7 +660,10 @@ class User(db.Model):
     events_owned = db.relationship('Event', backref = 'user')
     groups = db.relationship('Group', secondary = users_groups_table, backref = 'users')
     groups_owned = db.relationship('Group', backref = 'user')
-    meals = db.relationship('Meal', secondary = users_meals_table, backref = backref('invitees', lazy='dynamic'))
+    meals = association_proxy('user_meals', 'meal')
+# TODO FIXME remove once you test this
+# i'm worried that adding meals won't work through the form b/c of this lazy='dynamic' is absent in the new association_proxy definition
+#    db.relationship('Meal', secondary = users_meals_table, backref = backref('invitees', lazy='dynamic'))
     meals_suggested = db.relationship('Meal', backref = 'user')
     fbgroups = db.relationship('Fbgroup', secondary = users_fbgroups_table, backref = backref('invitees', lazy='dynamic'))
     fbgroups_owned = db.relationship('Fbgroup', backref = 'user')
@@ -953,6 +943,7 @@ class Meal(db.Model):
     location_lat = db.Column(db.Float(precision = 32))
     location_long = db.Column(db.Float(precision = 32))
     location_is_exact = db.Column(db.Boolean)
+    invitees = association_proxy('meal_users', 'user')
 
     def __init__(self, user_id, when = None, message = None, location_name = None, location_lat = None, location_long = None, location_is_exact = None):
         self.user_id = user_id
@@ -968,6 +959,31 @@ class Meal(db.Model):
     def __repr__(self):
         return '<Meal %r>' % (self.message)
 
+class MealRsvp(db.Model):
+    __tablename__ = 'users_meals'
+    id = db.Column(db.Integer, primary_key = True)
+    created = db.Column(db.DateTime)
+    modified = db.Column(db.DateTime)
+    meal_id = db.Column(db.Integer, db.ForeignKey('meals.id'), primary_key = True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key = True)
+    confirmed = db.Column(db.Boolean)
+    message = db.Column(db.String(length = 250))
+    meal = db.relationship("Meal",
+        backref = backref("meal_users", cascade="all, delete-orphan"))
+    user = db.relationship("User", 
+        backref = backref("user_meals", cascade="all, delete-orphan"))
+    __table_args__ = (UniqueConstraint('meal_id', 'user_id', name='unique-user-meal-pair'), )
+
+    def __init__(self, user_id, meal_id):
+        self.user_id = user_id
+        self.meal_id = meal_id
+        self.confirmed = None
+        self.message = None
+        self.created = datetime.utcnow()
+        self.modified = self.created
+
+    def __repr__(self):
+        return '<MealRsvp [Meal %r] [User %r]>' % (self.meal.id, self.user.id)
 
 class Fbgroup(db.Model):
     __tablename__ = 'fbgroups'

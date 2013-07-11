@@ -553,13 +553,25 @@ def get_meals(group_alias = None):
         return format_response('User not logged in', True)
 
     group = get_group(group_alias)
-    # TODO FIXME filter only meals in the future!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    now = str(datetime.now()-timedelta(days=1))
+    if group:
+        events = Event.query.filter(Event.group_id==group.id, Event.end_date >= now).order_by(Event.start_date).all()
+    else:
+        if group_alias == 'me':
+            # the "me" page -- this is kind of hacky... maybe find a better way? also see get_group
+            events = Event.query.filter(Event.user_id==session.get('user_id'), Event.end_date >= now).order_by(Event.start_date).all()
+        else:
+            events = Event.query.filter(Event.end_date >= now).order_by(Event.start_date).all()
+
+
+    group = get_group(group_alias)
+    now = str(datetime.now()-timedelta(days=1))
     if group_alias == 'me':
         # the "me" page -- this is kind of hacky... maybe find a better way? also see get_group
-        meals = Meal.query.filter_by(user_id=session.get('user_id'))
+        meals = Meal.query.filter(Meal.user_id==session.get('user_id'), Meal.when >= now).all()
     else:
         # TODO FIXME ONLY MEALS WHERE I AM INVITED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        meals = Meal.query.all()
+        meals = Meal.query.filter(Meal.when >= now).all()
 
     result_dict = []
     for meal in meals:
@@ -641,6 +653,12 @@ def add_fbgroup():
     if not session.get('logged_in'):
         return format_response('User not logged in', True)
 
+    then = str(datetime.now()-timedelta(months=1))
+    fbgroups_count = Fbgroup.query.filter(Fbgroup.user_id==session.get('user_id'), Fbgroup.created >= then).count()
+    if fbgroups_count >= LimitConstants.MAX_FBGROUPS_PER_USER_PER_MONTH:
+        error_msg = 'You cannot create more than ' + str(LimitConstants.MAX_FBGROUPS_PER_USER_PER_MONTH) + ' Facebook groups per month (this limit is imposed from Facebook, not us). Try again in a few days.'
+        return format_response(error_msg, True)
+
     fbgroup = Fbgroup(session.get('user_id'))
     form = NewFbgroupForm(obj=fbgroup, secret_key=os.environ[SECRET_KEY])
     if form.validate_on_submit():
@@ -650,6 +668,9 @@ def add_fbgroup():
         print fbgroup.description
         print fbgroup.privacy
         print len(fbgroup.invitees.all())
+        if len(fbgroup.invitees.all()) > LimitConstants.MAX_USERS_PER_FBGROUP:
+            error_msg = 'You cannot create a Facebook group with more than' + LimitConstants.MAX_USERS_PER_FBGROUP + ' members. Try zooming in more or selecting fewer users.'
+            return format_response(error_msg, True)
         # add fbgroup on fb
         oauth_token = os.environ[FACEBOOK_APP_TOKEN]
         print oauth_token
@@ -672,7 +693,7 @@ def add_fbgroup():
             db.session.commit()
             return json_response({'fbid': fbgroup.fbid})
 
-    return format_response('Could not add fb group for some reason...', True) 
+    return format_response('SERVER ERROR: Could not add fb group for some reason...', True) 
 
 #----------------------------------------
 # launch

@@ -11,6 +11,10 @@ class DatetimeConstants:
     WTFORMS_DATE_FORMAT = "%m/%d/%Y"
     JS_DATE_INITIALIZER_FORMAT = "%Y-%m-%d"
 
+class LimitConstants:
+    MAX_FBGROUPS_PER_USER_PER_MONTH = 3
+    MAX_USERS_PER_FBGROUP = 500
+
 class APIConstants:
     DEFAULT_GET_QUOTES_LIMIT = 30
 

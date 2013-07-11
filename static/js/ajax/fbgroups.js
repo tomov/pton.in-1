@@ -6,7 +6,10 @@ function add_fbgroup(form_data, callback) {
         'data' : form_data,
         'success' : callback,
         'error' : function(jqXHR, textStatus, errorThrown) {
-            alert('Something went wrong with the server -- couldn\'t add fb group...');
+            // TODO FIXME coupling with backend -- error messages sent from backend, whereas for e.g. mass e-mails they are stored in frontend. Figure out standard
+            bootbox.alert(errorThrown, function() {
+                // no callback
+            });
         }
     });
 }

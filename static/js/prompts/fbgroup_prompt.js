@@ -1,3 +1,5 @@
+MAX_FBGROUP_MEMBERS = 300;
+
 function showFbgroupPrompt() {
     $('#fbgroup_prompt').show();
     $('#show-fbgroup-link').hide();
