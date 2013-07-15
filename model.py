@@ -974,9 +974,9 @@ class MealRsvp(db.Model):
         backref = backref("user_meals", cascade="all, delete-orphan"))
     __table_args__ = (UniqueConstraint('meal_id', 'user_id', name='unique-user-meal-pair'), )
 
-    def __init__(self, user_id, meal_id):
-        self.user_id = user_id
-        self.meal_id = meal_id
+    def __init__(self, user = None, meal = None):
+        self.user = user
+        self.meal = meal
         self.confirmed = None
         self.message = None
         self.created = datetime.utcnow()

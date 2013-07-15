@@ -4,12 +4,20 @@ function add_fbgroup(form_data, callback) {
         'type' : 'POST',
         'dataType' : 'JSON',
         'data' : form_data,
-        'success' : callback,
+        'success' : function(data, textStatus, jqXHR) {
+            // TODO this is an ad-hoc error handling technique but can't really come up with anything better right now
+            if (data['status'] == 'success') {
+                if (callback) {
+                    callback(data, textStatus, jqXHR);
+                }
+            } else {
+                bootbox.alert(data['message'], function() {
+                    // no callback
+                });
+            }
+        },
         'error' : function(jqXHR, textStatus, errorThrown) {
-            // TODO FIXME coupling with backend -- error messages sent from backend, whereas for e.g. mass e-mails they are stored in frontend. Figure out standard
-            bootbox.alert(errorThrown, function() {
-                // no callback
-            });
+            alert('Something went wrong with the server -- couldn\'t add fbgroup...');
         }
     });
 }

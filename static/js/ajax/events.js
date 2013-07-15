@@ -8,7 +8,6 @@
 
 function get_events_success(data, textStatus, jqXHR) {
     // initialize data structures that represent trips (i.e. feed) once we have fetched them
-    console.log(data);
     events_data_global = data;
     populate_map_with_events(events_data_global);
     populate_feed_with_events(events_data_global);

@@ -1,5 +1,3 @@
-MAX_FBGROUP_MEMBERS = 300;
-
 function showFbgroupPrompt() {
     $('#fbgroup_prompt').show();
     $('#show-fbgroup-link').hide();
@@ -33,7 +31,6 @@ function prepareFbgroupBox() {
     geocoder_global.geocode({'latLng': latlng}, function(results, status) {
         if (status == google.maps.GeocoderStatus.OK) {
             if (results[1]) {
-                console.log(results);
                 result = results[results.length-2];
                 location_name = result['formatted_address'];
                 $('#fbgroup_name').val(group + ' in ' + location_name);

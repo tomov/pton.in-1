@@ -287,9 +287,17 @@ def format_response(msg=None, error=False):
     if msg is None:
         ret = {}
     elif not error:
-        ret = {'message' : msg}
+        ret = {'message' : msg, 'status': 'success'}
     if error:
-        ret = {'error': msg}
+        ret = {'error': msg, 'message': msg, 'status': 'failure'}
+    return json.dumps(ret)
+
+def format_response_2(msg=None, error=False):
+    ret = {'message': msg}
+    if error:
+        ret['status'] = 'failure'
+    else:
+        ret['status'] = 'success'
     return json.dumps(ret)
 
 #----------------------------------------
@@ -469,7 +477,7 @@ def get_events(group_alias = None):
         event_dict['end_date_form'] = event.end_date.strftime(DatetimeConstants.WTFORMS_DATETIME_FORMAT)
         rsvp = Rsvp.query.filter_by(user_id=session.get('user_id'), event_id=event.id).first()
         if rsvp:
-            rsvp_status = rsvp.rsvp_status
+            rsvp_status = rsvp.status
         else:
             rsvp_status = 'no'
         event_dict['rsvp_status'] = rsvp_status
@@ -607,7 +615,9 @@ def add_meal():
     meal = Meal(session.get('user_id'))
     form = NewMealForm(obj=meal, secret_key=os.environ[SECRET_KEY])
     if form.validate_on_submit():
+        print 'CREATING MEAL'
         form.populate_obj(meal)
+        print meal.message
         db.session.add(meal)
         db.session.commit()
         return format_response('SUCCESS!');
@@ -653,11 +663,12 @@ def add_fbgroup():
     if not session.get('logged_in'):
         return format_response('User not logged in', True)
 
-    then = str(datetime.now()-timedelta(months=1))
+    then = str(datetime.now()-timedelta(days=30))
     fbgroups_count = Fbgroup.query.filter(Fbgroup.user_id==session.get('user_id'), Fbgroup.created >= then).count()
     if fbgroups_count >= LimitConstants.MAX_FBGROUPS_PER_USER_PER_MONTH:
         error_msg = 'You cannot create more than ' + str(LimitConstants.MAX_FBGROUPS_PER_USER_PER_MONTH) + ' Facebook groups per month (this limit is imposed from Facebook, not us). Try again in a few days.'
-        return format_response(error_msg, True)
+        # TODO ad-hoc error messages and ad-hoc protocol in general...
+        return format_response_2(error_msg, True)
 
     fbgroup = Fbgroup(session.get('user_id'))
     form = NewFbgroupForm(obj=fbgroup, secret_key=os.environ[SECRET_KEY])
@@ -669,8 +680,9 @@ def add_fbgroup():
         print fbgroup.privacy
         print len(fbgroup.invitees.all())
         if len(fbgroup.invitees.all()) > LimitConstants.MAX_USERS_PER_FBGROUP:
-            error_msg = 'You cannot create a Facebook group with more than' + LimitConstants.MAX_USERS_PER_FBGROUP + ' members. Try zooming in more or selecting fewer users.'
-            return format_response(error_msg, True)
+            error_msg = 'You cannot create a Facebook group with more than ' + str(LimitConstants.MAX_USERS_PER_FBGROUP) + ' members. Try zooming in more or selecting fewer users.'
+            # TODO ad-hoc error messages and ad-hoc protocol in general...
+            return format_response_2(error_msg, True)
         # add fbgroup on fb
         oauth_token = os.environ[FACEBOOK_APP_TOKEN]
         print oauth_token
@@ -691,7 +703,8 @@ def add_fbgroup():
                 graph.put_object(fbgroup.fbid, 'members' + '/' + invitee.fbid)
             db.session.add(fbgroup)
             db.session.commit()
-            return json_response({'fbid': fbgroup.fbid})
+            # TODO ad-hoc error messages and ad-hoc protocol in general...
+            return json_response({'fbid': fbgroup.fbid, 'status': 'success'})
 
     return format_response('SERVER ERROR: Could not add fb group for some reason...', True) 
 
