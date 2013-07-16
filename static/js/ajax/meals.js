@@ -97,3 +97,15 @@ function edit_meal(meal_id, form_data, callback) {
         }
     });
 }
+
+function set_meal_rsvp(meal_id, confirmed, message, callback) {
+    $.ajax({
+        'url' : 'set_meal_rsvp/' + meal_id + '/' + confirmed + '/' + message,  // TODO {{ url_for(...
+        'type' : 'GET',
+        'dataType' : 'json',
+        'success' : callback, 
+        'error' : function(jqXHR, textStatus, errorThrown) {
+            alert('Something went wrong with the server -- couldn\'t rsvp to meal...');
+        }
+    });    
+}

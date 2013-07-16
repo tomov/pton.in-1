@@ -7,11 +7,12 @@ from datetime import datetime, timedelta
 from wtforms.ext.sqlalchemy.orm import model_form
 import urllib2
 import urllib
+from sqlalchemy import or_
 
 from forms import NewTripForm, NewEventForm, NewMealForm, NewFbgroupForm
 import model
 from model import db
-from model import User, Trip, Group, Alias, Event, Meal, Fbgroup, Rsvp
+from model import User, Trip, Group, Alias, Event, Meal, Fbgroup, Rsvp, MealRsvp
 from model import create_db
 from model import GraphAPI
 from constants import *
@@ -537,6 +538,7 @@ def delete_event(event_id):
 def set_event_rsvp(event_id, rsvp_status):
     if not session.get('logged_in'):
         return format_response('User not logged in', True)
+    user = get_current_user()
     event = Event.query.filter_by(id=event_id).first()
     if not event:
         return format_response('No event with given id', True)
@@ -545,7 +547,7 @@ def set_event_rsvp(event_id, rsvp_status):
     if rsvp:
         rsvp.status = rsvp_status
     else:
-        rsvp = Rsvp(session.get('user_id'), event.id)
+        rsvp = Rsvp(user, event)
         rsvp.status = rsvp_status
         db.session.add(rsvp)
     db.session.commit()
@@ -561,25 +563,14 @@ def get_meals(group_alias = None):
         return format_response('User not logged in', True)
 
     group = get_group(group_alias)
-    now = str(datetime.now()-timedelta(days=1))
-    if group:
-        events = Event.query.filter(Event.group_id==group.id, Event.end_date >= now).order_by(Event.start_date).all()
-    else:
-        if group_alias == 'me':
-            # the "me" page -- this is kind of hacky... maybe find a better way? also see get_group
-            events = Event.query.filter(Event.user_id==session.get('user_id'), Event.end_date >= now).order_by(Event.start_date).all()
-        else:
-            events = Event.query.filter(Event.end_date >= now).order_by(Event.start_date).all()
-
-
-    group = get_group(group_alias)
+    user = get_current_user()
     now = str(datetime.now()-timedelta(days=1))
     if group_alias == 'me':
         # the "me" page -- this is kind of hacky... maybe find a better way? also see get_group
-        meals = Meal.query.filter(Meal.user_id==session.get('user_id'), Meal.when >= now).all()
+        meals = Meal.query.filter(Meal.user_id==user.id, Meal.when >= now).order_by(Meal.when).all()
     else:
-        # TODO FIXME ONLY MEALS WHERE I AM INVITED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        meals = Meal.query.filter(Meal.when >= now).all()
+        meals = Meal.query.filter(Meal.when >= now, 
+            or_(user.id == Meal.user_id, Meal.invitees.any(User.id==user.id))).order_by(Meal.when).all()
 
     result_dict = []
     for meal in meals:
@@ -598,9 +589,32 @@ def get_meals(group_alias = None):
         meal_dict['user_email'] = meal.user.email
         meal_dict['user_fbid'] = meal.user.fbid
         meal_dict['is_mine'] = (meal.user.id == session.get('user_id', None))
+        if meal_dict['is_mine']:
+            meal_dict['invitees_yes'] = []
+            meal_dict['invitees_no'] = []
+            meal_dict['invitees_waiting'] = []
+            rsvps = MealRsvp.query.filter_by(meal_id=meal.id).all()
+            for rsvp in rsvps:
+                invitee_name = rsvp.user.first_name + ' ' + rsvp.user.last_name
+                if rsvp.confirmed == 1:
+                    meal_dict['invitees_yes'].append(invitee_name)
+                elif rsvp.confirmed == 0:
+                    meal_dict['invitees_no'].append(invitee_name)
+                else:
+                    meal_dict['invitees_waiting'].append(invitee_name)
         meal_dict['invitees'] = []
         for invitee in meal.invitees:
             meal_dict['invitees'].append(invitee.first_name + ' ' + invitee.last_name)
+        rsvp = MealRsvp.query.filter_by(user_id=session.get('user_id'), meal_id=meal.id).first()
+        if rsvp:
+            rsvp_confirmed = rsvp.confirmed
+            rsvp_message = rsvp.message
+        else:
+            rsvp_confirmed = None
+            rsvp_message = ''
+        meal_dict['rsvp_confirmed'] = rsvp_confirmed
+        meal_dict['rsvp_message'] = rsvp_message
+
         result_dict.append(meal_dict)
 
     dump = json.dumps(result_dict)
@@ -615,9 +629,7 @@ def add_meal():
     meal = Meal(session.get('user_id'))
     form = NewMealForm(obj=meal, secret_key=os.environ[SECRET_KEY])
     if form.validate_on_submit():
-        print 'CREATING MEAL'
         form.populate_obj(meal)
-        print meal.message
         db.session.add(meal)
         db.session.commit()
         return format_response('SUCCESS!');
@@ -655,6 +667,30 @@ def delete_meal(meal_id):
     db.session.commit()
     return format_response('SUCCESS!')
 
+@app.route("/set_meal_rsvp/<meal_id>/<confirmed>/<message>", methods = ['GET'])
+def set_meal_rsvp(meal_id, confirmed, message):
+    if not session.get('logged_in'):
+        return format_response('User not logged in', True)
+    user = get_current_user()
+    meal = Meal.query.filter_by(id=meal_id).first()
+    if not meal:
+        return format_response('No meal with given id', True)
+
+    print 'SET MEAL RSVP'
+    print meal_id
+    print confirmed
+    print message
+    rsvp = MealRsvp.query.filter_by(user_id=session.get('user_id'), meal_id=meal.id).first()
+    if rsvp:
+        rsvp.confirmed = confirmed
+        rsvp.message = message
+    else:
+        rsvp = MealRsvp(user, meal)
+        rsvp.confirmed = confirmed
+        rsvp.message = message
+        db.session.add(rsvp)
+    db.session.commit()
+    return json.dumps({'meal_id': meal_id})
 
 ##################### fb groups #############################
 

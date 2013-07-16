@@ -921,9 +921,9 @@ class Rsvp(db.Model):
         backref = backref("user_rsvps", cascade="all, delete-orphan"))
     __table_args__ = (UniqueConstraint('event_id', 'user_id', name='unique-user-event-pair'), )
 
-    def __init__(self, user_id, event_id):
-        self.user_id = user_id
-        self.event_id = event_id
+    def __init__(self, user, event):
+        self.user = user
+        self.event = event
         self.status = 'no'
         self.created = datetime.utcnow()
         self.modified = self.created

@@ -114,6 +114,13 @@ function deleteMealSuccess(data, textStatus, jqXHR) {
     location.reload();  // TODO Like mplungjan explained in the comment below, the reload() function takes an optional parameter that can be set to true to reload from the server rather than the cache. The parameter defaults to false, so by default the page reloads from the browser's cache. --- TEST IN REAL LIFE IN OTHER BROWSERS, OTHER USERS ETC ... also just remove altogether and add trip intelligently to timetable
 }
 
+function setMealRsvpSuccess(data, textStatus, jqXHR) {
+    meal_id = data['meal_id'];
+    $("#meal_rsvp_box_" + meal_id).hide();
+    $("#big_red_sign_" + meal_id).hide();
+    $("#meal_rsvp_submit_" + meal_id).val('Change response');
+}
+
 function onZoomMealPromptUpdate(bounds) {
     if (typeof trip_markers_global === 'undefined' || typeof timeline === 'undefined') {
         //  sometimes gets called before the timeline / map has loaded

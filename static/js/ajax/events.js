@@ -107,7 +107,7 @@ function set_event_rsvp(event_id, rsvp_status, callback) {
         'dataType' : 'json',
         'success' : callback, 
         'error' : function(jqXHR, textStatus, errorThrown) {
-            alert('Something went wrong with the server -- couldn\'t delete the event...');
+            alert('Something went wrong with the server -- couldn\'t rsvp to event...');
         }
     });    
 }
